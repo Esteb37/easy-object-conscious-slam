@@ -15,7 +15,7 @@ def generate_launch_description():
     )
 
     ocslam_driver = WebotsController(
-        robot_name='TurtleBot3Burger',
+        robot_name='Robot',
         parameters=[
             {'robot_description': robot_description_path},
         ]
