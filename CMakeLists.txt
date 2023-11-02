@@ -19,7 +19,7 @@ pluginlib_export_plugin_description_file(webots_ros2_driver ocslam.xml)
 add_library(
   ${PROJECT_NAME}
   SHARED
-  src/Drivetrain.cpp
+  src/Robot.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}

@@ -1,7 +1,7 @@
 <library path="ocslam">
-  <class type="Robot::Drivetrain" base_class_type="webots_ros2_driver::PluginInterface">
+  <class type="Robot::Robot" base_class_type="webots_ros2_driver::PluginInterface">
     <description>
-        Drivetrain
+        Robot
     </description>
   </class>
 </library>

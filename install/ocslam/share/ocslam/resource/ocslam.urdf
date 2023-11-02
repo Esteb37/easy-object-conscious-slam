@@ -2,7 +2,7 @@
 <robot name="Robot">
     <webots>
         <plugin
-        type="Robot::Drivetrain"
+        type="Robot::Robot"
         filename="libocslam.so" name="ocslam"/>
     </webots>
 </robot>

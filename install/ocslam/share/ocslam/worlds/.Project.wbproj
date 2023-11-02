@@ -9,9 +9,9 @@ textFiles: -1
 consoles: Console:All:All
 renderingDevicePerspectives: OCSLAM:Astra depth;1;0.895833;0;0
 renderingDevicePerspectives: OCSLAM:Astra rgb;1;0.895833;0;0
-renderingDevicePerspectives: Robot:Astra depth;1;0.895833;0;0
-renderingDevicePerspectives: Robot:Astra rgb;1;0.895833;0;0
+renderingDevicePerspectives: Robot:Astra depth;0;0.895833;0;0
+renderingDevicePerspectives: Robot:Astra rgb;0;0.895833;0;0
 renderingDevicePerspectives: TurtleBot3Burger:Astra depth;1;0.895833;0;0
 renderingDevicePerspectives: TurtleBot3Burger:Astra rgb;1;0.895833;0;0
-renderingDevicePerspectives: e-puck:camera;1;1;0;0
+renderingDevicePerspectives: e-puck:camera;0;1;0;0
 renderingDevicePerspectives: television:display;0;1;0;0

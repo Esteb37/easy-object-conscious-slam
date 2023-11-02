@@ -10,10 +10,6 @@ def generate_launch_description():
     package_dir = get_package_share_directory('ocslam')
     robot_description_path = os.path.join(package_dir, 'resource', 'ocslam.urdf')
 
-    webots = WebotsLauncher(
-        world=os.path.join(package_dir, 'worlds', 'Project.wbt')
-    )
-
     ocslam_driver = WebotsController(
         robot_name='Robot',
         parameters=[
@@ -22,12 +18,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        webots,
         ocslam_driver,
-        launch.actions.RegisterEventHandler(
-            event_handler=launch.event_handlers.OnProcessExit(
-                target_action=webots,
-                on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
-            )
-        )
+
     ])
