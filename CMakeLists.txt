@@ -18,16 +18,20 @@ pluginlib_export_plugin_description_file(webots_ros2_driver ocslam.xml)
 
 # Add each node to the add_executable() command
 add_executable(Follower src/Follower.cpp)
+add_executable(Socket src/Socket.cpp)
+
 
 # Link each node to the necessary libraries
 target_link_libraries(Follower ${PROJECT_NAME})
-
+target_link_libraries(Socket ${PROJECT_NAME})
 
 add_library(
   ${PROJECT_NAME}
   SHARED
   src/Robot.cpp
+  src/main.cpp
   src/Follower.cpp
+  src/Socket.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}
@@ -43,6 +47,7 @@ ament_target_dependencies(
 install(TARGETS
   ${PROJECT_NAME}
   Follower
+  Socket
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

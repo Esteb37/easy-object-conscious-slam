@@ -19,13 +19,14 @@ def generate_launch_description():
     )
 
 
-    follower = Node(
+    main = Node(
         package='ocslam',
-        executable='Follower',
-        name='Follower',
-        output='screen'
-
+        executable='main',
+        output='screen',
+        parameters=[
+            {'robot_description': robot_description_path},
+        ]
     )
 
     return LaunchDescription([
-        ocslam_driver, follower])
+        ocslam_driver, main])

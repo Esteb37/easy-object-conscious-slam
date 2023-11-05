@@ -1,3 +1,1 @@
-source;share/ocslam/environment/ament_prefix_path.sh
-source;share/ocslam/environment/library_path.sh
-source;share/ocslam/environment/path.sh
+/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/build/ocslam/ament_cmake_environment_hooks/local_setup.dsv

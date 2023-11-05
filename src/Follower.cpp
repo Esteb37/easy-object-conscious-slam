@@ -13,7 +13,7 @@ namespace Robot
         "/goal", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Follower::goalCallback, this, std::placeholders::_1));
     lidarSubscription_ = this->create_subscription<Lidar>(
-        "/lidar", rclcpp::SensorDataQoS().reliable(),
+        "/Robot/LDS_01", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Follower::lidarCallback, this, std::placeholders::_1));
 
     LOG(this, "Follower initialized");
@@ -24,12 +24,3 @@ namespace Robot
   }
 
 } // namespace Robot
-
-int main(int argc, char **argv)
-{
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<Robot::Follower>();
-  rclcpp::spin(node);
-  rclcpp::shutdown();
-  return 0;
-}
