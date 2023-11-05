@@ -1,10 +1,7 @@
-#include "ocslam/Robot.hpp"
-#include "ocslam/Utils.hpp"
+#include "Robot.hpp"
 
 #include <cstdio>
 #include <functional>
-#include <rclcpp/rclcpp.hpp>
-#include <webots/motor.h>
 #include <webots/position_sensor.h>
 #include <webots/robot.h>
 
@@ -55,7 +52,7 @@ namespace Robot
     lastRightWheelPosition_ = 0.0;
     lastLeftWheelPosition_ = 0.0;
 
-    LOG("Robot initialized");
+    LOG(node_, "Robot initialized");
   }
 
   void Robot::cmdVelCallback(

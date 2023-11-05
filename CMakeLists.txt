@@ -16,10 +16,18 @@ find_package(webots_ros2_driver REQUIRED)
 # Export the plugin configuration file
 pluginlib_export_plugin_description_file(webots_ros2_driver ocslam.xml)
 
+# Add each node to the add_executable() command
+add_executable(Follower src/Follower.cpp)
+
+# Link each node to the necessary libraries
+target_link_libraries(Follower ${PROJECT_NAME})
+
+
 add_library(
   ${PROJECT_NAME}
   SHARED
   src/Robot.cpp
+  src/Follower.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}
@@ -34,20 +42,31 @@ ament_target_dependencies(
 )
 install(TARGETS
   ${PROJECT_NAME}
+  Follower
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
 )
 # Install additional directories.
 install(DIRECTORY
   launch
   resource
   worlds
-  DESTINATION share/${PROJECT_NAME}/
+  DESTINATION share/${PROJECT_NAME}
 )
 ament_export_include_directories(
   include
 )
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+install(PROGRAMS
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_export_libraries(
   ${PROJECT_NAME}
 )

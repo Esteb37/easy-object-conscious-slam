@@ -4,6 +4,12 @@ source;share/ocslam/hook/cmake_prefix_path.sh
 source;share/ocslam/hook/ld_library_path_lib.ps1
 source;share/ocslam/hook/ld_library_path_lib.dsv
 source;share/ocslam/hook/ld_library_path_lib.sh
+source;share/ocslam/hook/path.ps1
+source;share/ocslam/hook/path.dsv
+source;share/ocslam/hook/path.sh
+source;share/ocslam/hook/pythonscriptspath.ps1
+source;share/ocslam/hook/pythonscriptspath.dsv
+source;share/ocslam/hook/pythonscriptspath.sh
 source;share/ocslam/local_setup.bash
 source;share/ocslam/local_setup.dsv
 source;share/ocslam/local_setup.ps1
