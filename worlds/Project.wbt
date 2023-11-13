@@ -7,8 +7,6 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/PaintedWood.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/apartment_structure/protos/Door.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/apartment_structure/protos/DoorLever.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/lights/protos/CeilingLight.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/lights/protos/FloorLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/kitchen/fridge/protos/Fridge.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/cabinet/protos/Cabinet.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/cabinet/protos/CabinetHandle.proto"
@@ -18,20 +16,11 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/kitchen/components/protos/HotPlate.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/drinks/protos/Can.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/tables/protos/Table.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/chairs/protos/Chair.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/fruits/protos/FruitBowl.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/fruits/protos/Orange.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/fruits/protos/Apple.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/tables/protos/Desk.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/chairs/protos/WoodenChair.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/school_furniture/protos/Book.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/living_room_furniture/protos/Armchair.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/living_room_furniture/protos/Sofa.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/living_room_furniture/protos/Carpet.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/plants/protos/BunchOfSunFlowers.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/gctronic/e-puck/protos/E-puck.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/gctronic/e-puck/protos/E-puckGroundSensors.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/plants/protos/PottedTree.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/paintings/protos/PortraitPainting.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/paintings/protos/LandscapePainting.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/television/protos/Television.proto"
@@ -47,8 +36,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.3887179054085569 0.5454756974426611 0.7425325942436645 1.529699340258706
-  position -7.201635609680553 -8.132099407269509 8.894820557326065
+  orientation -0.4047508694719454 0.32506967522662156 0.8546966946875147 1.9384692991311858
+  position -0.0763057033414486 -18.365822213491686 22.915376345681047
   exposure 0.5
 }
 TexturedBackground {
@@ -193,25 +182,11 @@ Wall {
   name "wall 9"
   size 0.3 3.3 2.4
 }
-CeilingLight {
-  translation -1.3341 -2.4706 2.4
-  name "ceiling light 1"
-  pointLightIntensity 5
-}
-CeilingLight {
-  translation -7.1011 -2.4432 2.4
-  name "ceiling light 2"
-  pointLightIntensity 8
-}
-FloorLight {
-  translation -4.0043 -0.7456 0
-  pointLightIntensity 2
-}
 Fridge {
-  hidden position_0_0 -6.592313808949765e-05
-  hidden position_0_1 6.592313837444993e-05
-  hidden rotation_1 0 0 -1 6.592314131395636e-05
-  hidden rotation_2 0 0 1 6.592314131395636e-05
+  hidden position_0_0 -0.00010987189681589355
+  hidden position_0_1 0.00010987189729074796
+  hidden rotation_1 0 0 -1 0.00010987189501320228
+  hidden rotation_2 0 0 1 0.00010987189905508398
   translation -0.52 -0.5 0
   rotation 0 0 1 -1.5707953071795862
   mainColor 0.6666666666666666 0 0
@@ -248,12 +223,12 @@ Cabinet {
   }
 }
 Cabinet {
-  hidden position_6_0 1.0087316670654004e-05
-  hidden translation_7 -2.107744818297409e-06 -1.0630774038844493e-11 0
-  hidden rotation_7 0 0 1 1.0087326734728114e-05
-  hidden position_10_0 -1.008956574555242e-05
-  hidden translation_11 -2.1082147624974095e-06 1.0635436975547918e-11 0
-  hidden rotation_11 0 0 -0.9999999999999999 1.008957173286188e-05
+  hidden position_6_0 1.68121944510841e-05
+  hidden translation_7 -3.512908030388534e-06 -2.952990629800922e-11 0
+  hidden rotation_7 0 0 1 1.6812181874906473e-05
+  hidden position_10_0 -1.6815942909254034e-05
+  hidden translation_11 -3.5136912707230318e-06 2.95430069296998e-11 0
+  hidden rotation_11 0 0 -1 1.681593234794112e-05
   translation -1.31 -0.15 1.12
   rotation 0 0 1 -1.5707953071795862
   name "cabinet 2"
@@ -284,9 +259,9 @@ Cabinet {
   }
 }
 Cabinet {
-  hidden position_6_0 -1.0087326168199835e-05
-  hidden translation_7 -2.1077468028096105e-06 1.0630746283268877e-11 0
-  hidden rotation_7 0 0 -1 1.0087326734728114e-05
+  hidden position_6_0 -1.68122102803385e-05
+  hidden translation_7 -3.5129113379112412e-06 2.952990629800922e-11 0
+  hidden rotation_7 0 0 -1 1.6812208289613636e-05
   translation -2.19 -0.15 0
   rotation 0 0 1 -1.5707953071795862
   name "cabinet 3"
@@ -354,7 +329,7 @@ HotPlate {
 }
 Can {
   translation -0.5663 -0.6328 0.8410656650000002
-  rotation -0.90275642838138 0.4295373328588823 0.022989360508113878 5.823312210282597e-16
+  rotation -0.945333210214328 0.32388095589876714 0.03802956839058 9.34612916662481e-16
   name "can 1"
 }
 Table {
@@ -362,94 +337,23 @@ Table {
   rotation 0 0 1 1.5708
   name "table(1)"
 }
-Chair {
-  translation -1.4606 -5.4128 -0.002244527999999857
-  rotation 5.862055210210734e-17 -5.901819028966025e-17 1 1.5708000000000004
-  name "chair 1"
-  color 0.13333333333333333 0.13333333333333333 0.13333333333333333
-  physics Physics {
-    centerOfMass [
-      0 0 0.45
-    ]
-  }
-}
-Chair {
-  translation -0.6425 -4.4443 -0.00224452800000019
-  rotation 1.7143163249047552e-17 1.764368086132488e-17 -0.9999999999999999 1.5707953071795862
-  name "chair 2"
-  color 0.13333333333333333 0.13333333333333333 0.13333333333333333
-  physics Physics {
-    centerOfMass [
-      0 0 0.45
-    ]
-  }
-}
-Chair {
-  translation -1.3943 -4.4875 -0.00224452800000019
-  rotation -2.50160076001999e-17 -2.6023140817768433e-17 -0.9999999999999999 1.5707953071795862
-  name "chair 3"
-  color 0.13333333333333333 0.13333333333333333 0.13333333333333333
-  physics Physics {
-    centerOfMass [
-      0 0 0.45
-    ]
-  }
-}
-Chair {
-  translation -0.7069 -5.3809 -0.002244527999999857
-  rotation -6.536324560670667e-17 6.47931837754168e-17 1 1.5708000000000004
-  name "chair 4"
-  color 0.13333333333333333 0.13333333333333333 0.13333333333333333
-  physics Physics {
-    centerOfMass [
-      0 0 0.45
-    ]
-  }
-}
-FruitBowl {
-  translation -0.7155000195898034 -4.88059999199565 0.7397841800000009
-  rotation 0.0001266334305893585 -4.085530945041e-05 0.9999999911474089 0.9446150066981517
-  color 0.6666666666666666 0 0
+Orange {
+  translation -0.7836766736675825 -4.9019582838486055 0.7898822796164635
+  rotation 0.9710627739500616 -0.23851253579858867 0.012200791586559798 0.6690796724984628
 }
 Orange {
-  translation -0.7836765485489591 -4.90195821291944 0.79966525037268
-  rotation 0.9710632274347543 -0.2385109074808995 0.012196529696449994 0.669077763740464
-}
-Orange {
-  translation -0.725071052090259 -4.820931116615744 0.7996737558324786
-  rotation 0.3663780065003279 -0.3690170248085788 0.8541625089842508 1.340080072952943
+  translation -0.7250710746910565 -4.8209309511411975 0.7898822796229139
+  rotation 0.3663761120741269 -0.3690164818717731 0.8541635561228459 1.3400784670696797
   name "orange 2"
 }
 Apple {
-  translation -0.702649392280046 -4.960563654109442 0.7996566693240554
-  rotation -0.0937719861961439 0.08814619346897094 0.9916839532743086 1.7488109682002075
+  translation -0.7026493679407998 -4.960563688706223 0.7898822796099572
+  rotation -0.09377148420264436 0.08814597191234425 0.9916840204349677 1.7488119885649447
 }
 Apple {
-  translation -0.6440435284159242 -4.879536023627344 0.7996652316510364
-  rotation -0.557145814010513 -0.49352309784444154 0.6678499036644301 0.5078138072110631
+  translation -0.6440434085911159 -4.879536078185051 0.7898822796164497
+  rotation -0.5571467286913668 -0.49352137356468234 0.6678504147961111 0.5078108094418875
   name "apple 2"
-}
-Desk {
-  translation -5.125 -0.5126 0
-  rotation 0 0 1 1.5708
-}
-WoodenChair {
-  translation -5.150621634391427 -0.8993535755852944 -0.0008272155154714356
-  rotation -3.071000889491371e-05 3.0670162562402216e-05 0.9999999990581182 1.5674451240631544
-  physics Physics {
-    centerOfMass [
-      0 0 0.45
-    ]
-  }
-}
-Book {
-  translation -4.697599376838157 -0.5922002817008928 0.7198822799744699
-  rotation 0.6215345944197974 0.47688671632040336 0.6215092981899474 -2.2515380803358793
-  name "book(1)"
-}
-Table {
-  translation -7.163 -2.5554 0.0199
-  size 0.8 1.2 0.53
 }
 Armchair {
   translation -5.8922 -3.8267 0
@@ -465,51 +369,6 @@ Sofa {
   translation -8.9573 -2.4973 0
   name "sofa 2"
   color 0.13333333333333333 0.13333333333333333 0.13333333333333333
-}
-Carpet {
-  translation -7.1422 -2.5507 -0.0151
-  rotation 0 0 1 -1.5707953071795862
-  color 0.13725490196078433 0.13725490196078433 0.13725490196078433
-}
-BunchOfSunFlowers {
-  translation -9.0598 -3.9144 0
-}
-Book {
-  translation -4.691697764807169 -0.5961009996086079 0.7398522019121192
-  rotation 0.6786317432741894 0.28105842775573037 0.6785758006355014 -2.593507796046748
-}
-Can {
-  translation -7.226324450467762 -2.7419136338114507 0.610979650204329
-  rotation 0.00033557720151530335 -0.00014758458441704612 -0.9999999328033637 1.294910242864332
-  name "can 2"
-}
-Can {
-  translation -7.35 -2.7233 0.6109656650000003
-  rotation -0.9877127120702133 -0.14656382179106328 0.05424614785310908 1.3306076929206066e-16
-  name "can 3"
-}
-Can {
-  translation -7.2069 -2.8744 0.6109656650000003
-  rotation 5.628564868189775e-16 4.089960572121928e-17 1 1.32183
-  name "can 4"
-}
-E-puck {
-  hidden position_0_0 282.96761956716847
-  hidden position_0_1 353.09674370408754
-  hidden linearVelocity_0 0.025639077032954677 -0.04968412273476237 -1.3345473245214635e-07
-  hidden angularVelocity_0 -0.011615518821094732 -0.005983945226814631 0.08951893726196627
-  hidden rotation_1 0 -0.9999999999999999 0 6.058904563092509
-  hidden linearVelocity_1 0.02454260175771445 -0.04755724788689842 -4.226717246427392e-09
-  hidden angularVelocity_1 2.3680957154697433 1.2220980811969278 0.08994424556265736
-  hidden rotation_2 0 1 0 1.2383665020307004
-  hidden linearVelocity_2 0.026677451917484895 -0.05169398682159521 3.871252190872182e-09
-  hidden angularVelocity_2 2.5944389873849003 1.3388910251690533 0.09002495212132303
-  translation -7.471485018628996 -2.761770005946026 0.5498680303272807
-  rotation -0.0009984133292195707 -0.0016246569914464008 0.9999981818285892 -1.0936522993230806
-  groundSensorsSlot [
-    E-puckGroundSensors {
-    }
-  ]
 }
 Cabinet {
   translation -3.4681 -6.4326 0
@@ -537,32 +396,29 @@ Cabinet {
   }
 }
 Book {
-  translation -3.0223269738394087 -6.150899990471575 1.5292517614890784
-  rotation 0.12391933245440376 3.3453411065135245e-07 0.9922922951650603 -3.1415856018274013
+  translation -3.0223307281566996 -6.150900017506726 1.529255743496415
+  rotation 0.12391675201663264 1.8165073393115134e-07 0.992292617411626 -3.1415809399534993
   name "book 2"
 }
 Book {
-  translation -3.0447201375216157 -6.15760000132391 1.5289795871438916
-  rotation 0.13225816892687647 -1.3229127260730635e-07 0.9912153029246937 -3.1415811713918664
+  translation -3.0447237609992914 -6.157600058508283 1.5289862451972236
+  rotation 0.13225704370634783 -6.757686545921359e-07 0.9912154530623504 -3.141574477072209
   name "book 3"
 }
 Book {
-  translation -3.066827280187392 -6.1641999574943585 1.5287765998686509
-  rotation 0.13877380515841223 4.1040425107222066e-07 0.990324104019329 -3.1415921387274315
+  translation -3.0668307133761505 -6.1642000233580125 1.528779535979844
+  rotation 0.13876714232414125 1.506513507236176e-08 0.9903250376574305 -3.1415892299122943
   name "book 4"
 }
 Book {
-  translation -3.091215717524844 -6.158199898191307 1.528163965842345
-  rotation 0.15515837160864154 1.1064417501569975e-06 0.9878896090750882 3.141587914522964
+  translation -3.091219255285535 -6.158199957937375 1.528162209752951
+  rotation 0.15514576434008967 1.0696065009037039e-06 0.98789158909578 3.1415881963455905
   name "book 5"
 }
 Book {
-  translation -3.1139134491470064 -6.162299858738417 1.5277958344636529
-  rotation 0.16259615730568183 8.095331616339068e-07 0.9866927027341242 3.1415910521068446
+  translation -3.113917996732276 -6.1622998977722965 1.5277970926309559
+  rotation 0.16259372129286948 6.805869547831336e-07 0.9866931041593802 3.141591656267003
   name "book 6"
-}
-PottedTree {
-  translation -4.517 -6.0805 0
 }
 PortraitPainting {
   translation -9.73 -2.47 1.5999
@@ -576,19 +432,28 @@ Television {
   rotation 0 0 1 3.14159
 }
 CreateWall {
-  translation -3.2349968504035362 -3.5311999999999526 -3.923999966270325e-05
-  rotation -1.836604424234528e-06 1.8366025516795112e-06 -0.9999999999966268 1.5707953072293523
+  translation -3.2349968504035362 -3.5311999999999526 -3.923999966271019e-05
+  rotation -1.8366044242060542e-06 1.8366025516629246e-06 -0.9999999999966268 1.5707953072293523
 }
 TurtleBot3Burger {
-  hidden position_0_0 2.2521467451406487e-11
-  hidden position_0_1 7.463522068274289e-12
-  hidden position_0_2 3.493688238997223e-05
-  hidden position2_0_2 -6.103373920452946e-05
-  hidden position3_0_2 -5.798370484730935e-09
-  hidden rotation_11 0 -1 0 1.5707959999774785
-  hidden rotation_13 0.4967868923529937 -0.867872556345931 -9.761062363385648e-05 7.032568886759298e-05
-  translation -0.5899999999093897 -1.3599999999478778 -0.0001491379598348025
-  rotation 0.001318607453917454 0.00035068782165667355 0.9999990691457841 -2.617995766207282
+  hidden position_0_0 544.182255092254
+  hidden position_0_1 544.182254971693
+  hidden position_0_2 690.1164587303472
+  hidden position2_0_2 0.33628074587737455
+  hidden position3_0_2 -0.14263317766952557
+  hidden linearVelocity_0 -1.8157438919129805e-15 4.216266500533608e-15 0
+  hidden angularVelocity_0 -8.501180312321305e-17 1.2200266020445603e-15 -5.914774435809079e-15
+  hidden rotation_11 0 1 0 2.257522674832052
+  hidden linearVelocity_11 -2.4198712325647195e-15 2.6400130368345366e-15 1.737232491483748e-16
+  hidden angularVelocity_11 -3.5840058494334925e-15 -1.2640210418767034e-15 -1.7127692691530463e-15
+  hidden rotation_12 -0.42778250060633954 2.1909748435033084e-06 0.9038817025309157 3.141594220247032
+  hidden linearVelocity_12 2.5882630025545267e-15 -2.2888290107547734e-15 4.564923365590806e-16
+  hidden angularVelocity_12 -1.6633274683720418e-16 4.719655307199995e-15 -3.2450178141311664e-16
+  hidden rotation_13 -0.9394309840196121 0.20891159011011118 -0.27170825122106274 1.1134406999951263
+  hidden linearVelocity_13 -3.0686900458405192e-15 3.9872987190890165e-15 -8.105901888919636e-14
+  hidden angularVelocity_13 -9.968246640071918e-13 -7.671724745377171e-13 -0.000755978404886225
+  translation -0.7428936765703003 -1.1994626767849257 -0.0001491379606123333
+  rotation 0.0013189560509921376 0.0005434963434158294 0.9999989824828123 -2.356177733518588
   name "Robot"
   controller "<extern>"
   extensionSlot [

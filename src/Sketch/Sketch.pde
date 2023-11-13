@@ -8,6 +8,9 @@ void setup()
   client = new Client(this, "localhost", 12345);
 }
 
+// matrix of size 100000x100000 points
+PVector[][] matrix = new PVector[1000][1000];
+
 void draw()
 {
   JSONObject json = null;
@@ -26,8 +29,11 @@ void draw()
     background(255);
 
     JSONObject lidar = json.getJSONObject("lidar");
+    JSONObject pose = json.getJSONObject("pose");
 
     JSONArray ranges = lidar.getJSONArray("ranges");
+
+
 
 
     for (int i = 0; i < ranges.size(); i++)
@@ -40,11 +46,19 @@ void draw()
         float x = range * cos(angle);
         float y = range * sin(angle);
 
-        x = x * 100 + width / 2;
-        y = y * 100 + height / 2;
+
+        x = x * 50 + width / 2;
+        y = y * 50 + height / 2;
+
+        println(floor(x),floor(y));
 
         fill(255, 0, 0);
-        ellipse(x, y, 2, 2);
+        ellipse(x, y, 1, 1);
+        ellipse(width/2, height/2, 10, 10);
+
+
+
+
       }
       catch (Exception e)
       {

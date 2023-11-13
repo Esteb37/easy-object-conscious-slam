@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/mnt/c/Program Files/Webots/include/controller/cpp/webots/**",
-                "/opt/ros/rolling/include/**"
+                "/opt/ros/humble/include/**"
             ],
             "defines": [],
             "cStandard": "c17",

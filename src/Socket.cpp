@@ -64,20 +64,12 @@ namespace Robot
           {"pose", {
                        {"x", pose_.position.x},
                        {"y", pose_.position.y},
-                       {"z", pose_.position.z},
-                       {"w", pose_.orientation.w},
-                       {"x", pose_.orientation.x},
-                       {"y", pose_.orientation.y},
-                       {"z", pose_.orientation.z},
+                       {"theta", pose_.orientation.z},
                    }},
           {"goal", {
                        {"x", goal_.position.x},
                        {"y", goal_.position.y},
-                       {"z", goal_.position.z},
-                       {"w", goal_.orientation.w},
-                       {"x", goal_.orientation.x},
-                       {"y", goal_.orientation.y},
-                       {"z", goal_.orientation.z},
+                       {"theta", goal_.orientation.z},
                    }}};
 
       auto string = json.dump();
