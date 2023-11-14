@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/mnt/c/Program Files/Webots/include/controller/cpp/webots/**",
-                "/opt/ros/humble/include/**"
+                "/opt/ros/humble/include/**",
+
+                "!/mnt/c/Program Files/Webots/include/controller/cpp/webots/Robot.hpp"
             ],
             "defines": [],
             "cStandard": "c17",

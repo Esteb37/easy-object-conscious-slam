@@ -62,6 +62,8 @@ install(DIRECTORY
   launch
   resource
   worlds
+  src
+  rviz
   DESTINATION share/${PROJECT_NAME}
 )
 ament_export_include_directories(

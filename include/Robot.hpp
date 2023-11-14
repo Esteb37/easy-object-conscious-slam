@@ -34,17 +34,12 @@ namespace Robot
     void cmdVelCallback(const Velocity::SharedPtr msg);
     void lidarCallback(const Lidar::SharedPtr msg);
 
+    void setupTopics();
+    void setupWebots();
+    void setupPose();
+
     void updateOdometry();
-
-    void setRightVelocity(float linear, float angular)
-    {
-      wb_motor_set_velocity(rightMotor_, (linear - angular * TRACK_WIDTH) / WHEEL_RADIUS);
-    }
-
-    void setLeftVelocity(float linear, float angular)
-    {
-      wb_motor_set_velocity(leftMotor_, (linear + angular * TRACK_WIDTH) / WHEEL_RADIUS);
-    }
+    void broadcast();
 
     Subscription<Velocity>::SharedPtr
         cmdVelSubscription_;
