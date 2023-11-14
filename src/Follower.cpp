@@ -13,7 +13,7 @@ namespace Robot
         "/goal", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Follower::goalCallback, this, std::placeholders::_1));
     lidarSubscription_ = this->create_subscription<Lidar>(
-        "/Robot/LDS_01", rclcpp::SensorDataQoS().reliable(),
+        "/scan", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Follower::lidarCallback, this, std::placeholders::_1));
 
     LOG(this, "Follower initialized");

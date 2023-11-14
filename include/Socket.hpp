@@ -2,7 +2,7 @@
 #define SOCKET_HPP
 
 #include <boost/asio.hpp>
-#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>

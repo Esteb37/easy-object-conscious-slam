@@ -74,7 +74,11 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp",
-    "*.ipp": "cpp"
+    "*.ipp": "cpp",
+    "any": "cpp",
+    "coroutine": "cpp",
+    "source_location": "cpp",
+    "valarray": "cpp"
   },
   "C_Cpp.default.compilerPath": "/usr/bin/cpp"
 }

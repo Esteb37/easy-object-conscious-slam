@@ -14,7 +14,7 @@ namespace Robot
         "/goal", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Socket::goalCallback, this, std::placeholders::_1));
     lidarSubscription_ = this->create_subscription<Lidar>(
-        "/Robot/LDS_01", rclcpp::SensorDataQoS().reliable(),
+        "/scan", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Socket::lidarCallback, this, std::placeholders::_1));
 
     // try three times
@@ -62,14 +62,14 @@ namespace Robot
                         {"range_max", lidar_.range_max},
                     }},
           {"pose", {
-                       {"x", pose_.position.x},
-                       {"y", pose_.position.y},
-                       {"theta", pose_.orientation.z},
+                       {"x", pose_.pose.position.x},
+                       {"y", pose_.pose.position.y},
+                       {"theta", pose_.pose.orientation.z},
                    }},
           {"goal", {
-                       {"x", goal_.position.x},
-                       {"y", goal_.position.y},
-                       {"theta", goal_.orientation.z},
+                       {"x", goal_.pose.position.x},
+                       {"y", goal_.pose.position.y},
+                       {"theta", goal_.pose.orientation.z},
                    }}};
 
       auto string = json.dump();

@@ -2,15 +2,17 @@
 
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
 
-using namespace geometry_msgs::msg;
-using namespace std_msgs::msg;
+#define Transform geometry_msgs::msg::TransformStamped
+#define Pose geometry_msgs::msg::PoseStamped
+#define Velocity geometry_msgs::msg::Twist
+#define Lidar sensor_msgs::msg::LaserScan
+#define Float32 std_msgs::msg::Float32
+
 using namespace rclcpp;
-typedef geometry_msgs::msg::Twist Velocity;
-typedef sensor_msgs::msg::LaserScan Lidar;
 
-static const char *timestamp()
+static const char *
+timestamp()
 {
   long int time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
@@ -33,4 +35,4 @@ static const char *timestamp()
 
 #define LOG(NODE, MSG) RCLCPP_INFO(NODE->get_logger(), "%d %s() %s", __LINE__, __FUNCTION__, MSG)
 
-#define LOGN(NODE, MSG) RCLCPP_INFO(NODE->get_logger(), "%d %s() %f", __LINE__, __FUNCTION__, MSG)
+#define LOGN(NODE, MSG) RCLCPP_INFO(NODE->get_logger(), "%d %s() %f", __LINE__, __FUNCTION__, (double)MSG)
