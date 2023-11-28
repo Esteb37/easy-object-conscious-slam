@@ -9,21 +9,24 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(rosidl_typesupport_cpp REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(pcl_conversions REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(webots_ros2_driver REQUIRED)
+
 
 # Export the plugin configuration file
 pluginlib_export_plugin_description_file(webots_ros2_driver ocslam.xml)
 
 # Add each node to the add_executable() command
-add_executable(Follower src/Follower.cpp)
 add_executable(Socket src/Socket.cpp)
 add_executable(main src/main.cpp)
 
 
 # Link each node to the necessary libraries
-target_link_libraries(Follower ${PROJECT_NAME})
 target_link_libraries(Socket ${PROJECT_NAME})
 target_link_libraries(main ${PROJECT_NAME})
 
@@ -33,7 +36,6 @@ add_library(
   SHARED
   src/Robot.cpp
   src/main.cpp
-  src/Follower.cpp
   src/Socket.cpp
 )
 target_include_directories(
@@ -46,10 +48,11 @@ ament_target_dependencies(
   pluginlib
   rclcpp
   webots_ros2_driver
+  nav_msgs
+  rosidl_typesupport_cpp
 )
 install(TARGETS
   ${PROJECT_NAME}
-  Follower
   Socket
   main
   ARCHIVE DESTINATION lib

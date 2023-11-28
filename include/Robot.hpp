@@ -4,6 +4,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
@@ -45,8 +46,8 @@ namespace Robot
         cmdVelSubscription_;
     Subscription<Lidar>::SharedPtr
         lidarSubscription_;
-    Publisher<Pose>::SharedPtr
-        posePublisher_;
+    Publisher<Odom>::SharedPtr
+        odomPublisher_;
     Publisher<Velocity>::SharedPtr
         velocityPublisher_;
     Publisher<Float32>::SharedPtr
@@ -62,13 +63,14 @@ namespace Robot
     WbDeviceTag leftPositionSensor_;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    Transform transform_;
+    Transform odomTransform_;
+    Transform lidarTransform_;
 
     Velocity cmdVelMsg_;
     Lidar lidar_;
 
     Velocity currentVelocity_;
-    Pose currentPose_;
+    Odom currentPose_;
     webots_ros2_driver::WebotsNode *node_;
 
     Clock::SharedPtr clock_;

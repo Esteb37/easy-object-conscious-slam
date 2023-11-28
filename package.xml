@@ -17,6 +17,7 @@
 
   <depend>rclcpp</depend>
   <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>webots_ros2_driver</depend>
   <depend>pluginlib</depend>
 

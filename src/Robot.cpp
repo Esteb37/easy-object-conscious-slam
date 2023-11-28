@@ -34,6 +34,10 @@ namespace Robot
   {
     updateOdometry();
     broadcast();
+
+    // Drive simulation
+    wb_motor_set_velocity(rightMotor_, (cmdVelMsg_.linear.x - cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
+    wb_motor_set_velocity(leftMotor_, (cmdVelMsg_.linear.x + cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
   }
 
   void Robot::cmdVelCallback(const Velocity::SharedPtr msg)
@@ -56,11 +60,21 @@ namespace Robot
         "/Robot/LDS_01", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Robot::lidarCallback, this, std::placeholders::_1));
 
-    posePublisher_ = node_->create_publisher<Pose>("/pose", rclcpp::SensorDataQoS().reliable());
+    odomPublisher_ = node_->create_publisher<Odom>("/odom", rclcpp::SensorDataQoS().reliable());
+
     velocityPublisher_ = node_->create_publisher<Velocity>("/velocity", rclcpp::SensorDataQoS().reliable());
     rightWheelPublisher_ = node_->create_publisher<Float32>("/right_wheel", rclcpp::SensorDataQoS().reliable());
     leftWheelPublisher_ = node_->create_publisher<Float32>("/left_wheel", rclcpp::SensorDataQoS().reliable());
+
+    lidar_.header.frame_id = "base_scan";
     lidarPublisher_ = node_->create_publisher<Lidar>("/scan", rclcpp::SensorDataQoS().reliable());
+
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_);
+    odomTransform_.header.frame_id = "odom";
+    odomTransform_.child_frame_id = "base_footprint";
+
+    lidarTransform_.header.frame_id = "base_scan";
+    lidarTransform_.child_frame_id = "LDS_01";
   }
 
   void Robot::setupWebots()
@@ -89,7 +103,8 @@ namespace Robot
     lastRightWheelPosition_ = 0.0;
     lastLeftWheelPosition_ = 0.0;
 
-    currentPose_.header.frame_id = "base_link";
+    currentPose_.header.frame_id = "odom";
+    currentPose_.child_frame_id = "base_footprint";
   }
 
   void Robot::updateOdometry()
@@ -117,14 +132,15 @@ namespace Robot
     currentVelocity_.linear.x = (rightWheelSpeed + leftWheelSpeed) * WHEEL_RADIUS / 2.0;
     currentVelocity_.angular.z = (rightWheelSpeed - leftWheelSpeed) * WHEEL_RADIUS / TRACK_WIDTH;
 
-    currentPose_.pose.position.x += currentVelocity_.linear.x * dt.seconds() * cos(currentPose_.pose.orientation.z);
+    currentPose_.header.stamp = currentTime;
 
-    currentPose_.pose.position.y += currentVelocity_.linear.x * dt.seconds() * sin(currentPose_.pose.orientation.z);
+    currentPose_.pose.pose.position.x += currentVelocity_.linear.x * dt.seconds() * cos(currentPose_.pose.pose.orientation.z);
 
-    currentPose_.pose.orientation.z += currentVelocity_.angular.z * dt.seconds();
+    currentPose_.pose.pose.position.y += currentVelocity_.linear.x * dt.seconds() * sin(currentPose_.pose.pose.orientation.z);
 
-    wb_motor_set_velocity(rightMotor_, (cmdVelMsg_.linear.x - cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
-    wb_motor_set_velocity(leftMotor_, (cmdVelMsg_.linear.x + cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
+    currentPose_.pose.pose.orientation.z += currentVelocity_.angular.z * dt.seconds();
+
+    currentPose_.twist.twist = currentVelocity_;
   }
 
   void Robot::broadcast()
@@ -133,13 +149,23 @@ namespace Robot
     auto currentTime = clock_->now();
 
     currentPose_.header.stamp = currentTime;
-
-    lidar_.header.frame_id = "base_scan";
     lidar_.header.stamp = currentTime;
 
     lidarPublisher_->publish(lidar_);
-    posePublisher_->publish(currentPose_);
+    odomPublisher_->publish(currentPose_);
     velocityPublisher_->publish(currentVelocity_);
+
+    odomTransform_.header.stamp = currentTime;
+    odomTransform_.transform.translation.x = currentPose_.pose.pose.position.x;
+    odomTransform_.transform.translation.y = currentPose_.pose.pose.position.y;
+    odomTransform_.transform.translation.z = 0.0;
+    odomTransform_.transform.rotation = currentPose_.pose.pose.orientation;
+
+    tf_broadcaster_->sendTransform(odomTransform_);
+
+    lidarTransform_.header.stamp = currentTime;
+
+    tf_broadcaster_->sendTransform(lidarTransform_);
   }
 
 } // namespace Robot

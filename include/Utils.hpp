@@ -4,7 +4,8 @@
 #include <rclcpp/rclcpp.hpp>
 
 #define Transform geometry_msgs::msg::TransformStamped
-#define Pose geometry_msgs::msg::PoseStamped
+#define PoseMsg geometry_msgs::msg::Pose
+#define Odom nav_msgs::msg::Odometry
 #define Velocity geometry_msgs::msg::Twist
 #define Lidar sensor_msgs::msg::LaserScan
 #define Float32 std_msgs::msg::Float32

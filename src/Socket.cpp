@@ -7,10 +7,10 @@ namespace Robot
   void Socket::setup()
   {
 
-    poseSubscription_ = this->create_subscription<Pose>(
-        "/pose", rclcpp::SensorDataQoS().reliable(),
+    poseSubscription_ = this->create_subscription<Odom>(
+        "/odom", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Socket::poseCallback, this, std::placeholders::_1));
-    goalSubscription_ = this->create_subscription<Pose>(
+    goalSubscription_ = this->create_subscription<PoseMsg>(
         "/goal", rclcpp::SensorDataQoS().reliable(),
         std::bind(&Socket::goalCallback, this, std::placeholders::_1));
     lidarSubscription_ = this->create_subscription<Lidar>(
@@ -62,14 +62,14 @@ namespace Robot
                         {"range_max", lidar_.range_max},
                     }},
           {"pose", {
-                       {"x", pose_.pose.position.x},
-                       {"y", pose_.pose.position.y},
-                       {"theta", pose_.pose.orientation.z},
+                       {"x", pose_.pose.pose.position.x},
+                       {"y", pose_.pose.pose.position.y},
+                       {"theta", pose_.pose.pose.orientation.z},
                    }},
           {"goal", {
-                       {"x", goal_.pose.position.x},
-                       {"y", goal_.pose.position.y},
-                       {"theta", goal_.pose.orientation.z},
+                       {"x", goal_.position.x},
+                       {"y", goal_.position.y},
+                       {"theta", goal_.orientation.z},
                    }}};
 
       auto string = json.dump();

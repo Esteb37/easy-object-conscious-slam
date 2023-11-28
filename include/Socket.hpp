@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
@@ -36,12 +37,12 @@ namespace Robot
     void acceptConnections();
     void handleConnection();
 
-    void poseCallback(const Pose::SharedPtr msg)
+    void poseCallback(const Odom::SharedPtr msg)
     {
       pose_ = *msg;
     }
 
-    void goalCallback(const Pose::SharedPtr msg)
+    void goalCallback(const PoseMsg::SharedPtr msg)
     {
       goal_ = *msg;
     }
@@ -51,15 +52,15 @@ namespace Robot
       lidar_ = *msg;
     }
 
-    Subscription<Pose>::SharedPtr
+    Subscription<Odom>::SharedPtr
         poseSubscription_;
-    Subscription<Pose>::SharedPtr
+    Subscription<PoseMsg>::SharedPtr
         goalSubscription_;
     Subscription<Lidar>::SharedPtr
         lidarSubscription_;
 
-    Pose pose_;
-    Pose goal_;
+    Odom pose_;
+    PoseMsg goal_;
     Lidar lidar_;
 
     std::shared_ptr<boost::asio::io_service> io_service_;
