@@ -131,11 +131,11 @@
 
   <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="base_scan"/>
+    <child link="LDS_01"/>
     <origin xyz="-0.032 0 0.172" rpy="0 0 0"/>
   </joint>
 
-  <link name="base_scan">
+  <link name="LDS_01">
     <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>

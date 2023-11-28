@@ -66,15 +66,12 @@ namespace Robot
     rightWheelPublisher_ = node_->create_publisher<Float32>("/right_wheel", rclcpp::SensorDataQoS().reliable());
     leftWheelPublisher_ = node_->create_publisher<Float32>("/left_wheel", rclcpp::SensorDataQoS().reliable());
 
-    lidar_.header.frame_id = "base_scan";
+    lidar_.header.frame_id = "LDS_01";
     lidarPublisher_ = node_->create_publisher<Lidar>("/scan", rclcpp::SensorDataQoS().reliable());
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_);
     odomTransform_.header.frame_id = "odom";
     odomTransform_.child_frame_id = "base_footprint";
-
-    lidarTransform_.header.frame_id = "base_scan";
-    lidarTransform_.child_frame_id = "LDS_01";
   }
 
   void Robot::setupWebots()
@@ -162,10 +159,6 @@ namespace Robot
     odomTransform_.transform.rotation = currentPose_.pose.pose.orientation;
 
     tf_broadcaster_->sendTransform(odomTransform_);
-
-    lidarTransform_.header.stamp = currentTime;
-
-    tf_broadcaster_->sendTransform(lidarTransform_);
   }
 
 } // namespace Robot
