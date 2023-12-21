@@ -16,7 +16,7 @@
 
 #include "Utils.hpp"
 
-#define TRACK_WIDTH 0.08
+#define TRACK_WIDTH 0.178
 #define WHEEL_RADIUS 0.033
 #define PPR 4096
 #define GEAR_RATIO 1.0
@@ -48,12 +48,6 @@ namespace Robot
         lidarSubscription_;
     Publisher<Odom>::SharedPtr
         odomPublisher_;
-    Publisher<Velocity>::SharedPtr
-        velocityPublisher_;
-    Publisher<Float32>::SharedPtr
-        leftWheelPublisher_;
-    Publisher<Float32>::SharedPtr
-        rightWheelPublisher_;
     Publisher<Lidar>::SharedPtr
         lidarPublisher_;
 
@@ -63,8 +57,8 @@ namespace Robot
     WbDeviceTag leftPositionSensor_;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    Transform odomTransform_;
-    Transform lidarTransform_;
+    geometry_msgs::msg::TransformStamped odomTransform_;
+    geometry_msgs::msg::TransformStamped lidarTransform_;
 
     Velocity cmdVelMsg_;
     Lidar lidar_;

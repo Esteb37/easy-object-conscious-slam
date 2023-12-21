@@ -3,7 +3,6 @@
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#define Transform geometry_msgs::msg::TransformStamped
 #define PoseMsg geometry_msgs::msg::Pose
 #define Odom nav_msgs::msg::Odometry
 #define Velocity geometry_msgs::msg::Twist
@@ -36,4 +35,4 @@ timestamp()
 
 #define LOG(NODE, MSG) RCLCPP_INFO(NODE->get_logger(), "%d %s() %s", __LINE__, __FUNCTION__, MSG)
 
-#define LOGN(NODE, MSG) RCLCPP_INFO(NODE->get_logger(), "%d %s() %f", __LINE__, __FUNCTION__, (double)MSG)
+#define LOGN(NODE, TXT, VAL) RCLCPP_INFO(NODE->get_logger(), "%d %s() %s %f", __LINE__, __FUNCTION__, TXT, (double)VAL)

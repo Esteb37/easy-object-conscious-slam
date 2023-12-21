@@ -28,6 +28,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/robotis/turtlebot/protos/TurtleBot3Burger.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/orbbec/protos/Astra.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/robotis/protos/RobotisLds01.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/humans/pedestrian/protos/Pedestrian.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Dog.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/balls/protos/FifaSoccerBall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/factory/fire_extinguisher/protos/FireExtinguisher.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/garden/protos/Gnome.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/plants/protos/BunchOfSunFlowers.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/toys/protos/RubberDuck.proto"
 
 WorldInfo {
   info [
@@ -36,8 +43,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.4047508694719454 0.32506967522662156 0.8546966946875147 1.9384692991311858
-  position -0.0763057033414486 -18.365822213491686 22.915376345681047
+  orientation -0.3064032402697963 0.23131403751706972 0.9233693033666005 1.9240716723996847
+  position 1.0841590165951227 -13.276224679016869 8.12868088492336
   exposure 0.5
 }
 TexturedBackground {
@@ -183,10 +190,6 @@ Wall {
   size 0.3 3.3 2.4
 }
 Fridge {
-  hidden position_0_0 -0.00010987189681589355
-  hidden position_0_1 0.00010987189729074796
-  hidden rotation_1 0 0 -1 0.00010987189501320228
-  hidden rotation_2 0 0 1 0.00010987189905508398
   translation -0.52 -0.5 0
   rotation 0 0 1 -1.5707953071795862
   mainColor 0.6666666666666666 0 0
@@ -223,12 +226,6 @@ Cabinet {
   }
 }
 Cabinet {
-  hidden position_6_0 1.68121944510841e-05
-  hidden translation_7 -3.512908030388534e-06 -2.952990629800922e-11 0
-  hidden rotation_7 0 0 1 1.6812181874906473e-05
-  hidden position_10_0 -1.6815942909254034e-05
-  hidden translation_11 -3.5136912707230318e-06 2.95430069296998e-11 0
-  hidden rotation_11 0 0 -1 1.681593234794112e-05
   translation -1.31 -0.15 1.12
   rotation 0 0 1 -1.5707953071795862
   name "cabinet 2"
@@ -259,9 +256,6 @@ Cabinet {
   }
 }
 Cabinet {
-  hidden position_6_0 -1.68122102803385e-05
-  hidden translation_7 -3.5129113379112412e-06 2.952990629800922e-11 0
-  hidden rotation_7 0 0 -1 1.6812208289613636e-05
   translation -2.19 -0.15 0
   rotation 0 0 1 -1.5707953071795862
   name "cabinet 3"
@@ -436,24 +430,8 @@ CreateWall {
   rotation -1.8366044242060542e-06 1.8366025516629246e-06 -0.9999999999966268 1.5707953072293523
 }
 TurtleBot3Burger {
-  hidden position_0_0 544.182255092254
-  hidden position_0_1 544.182254971693
-  hidden position_0_2 690.1164587303472
-  hidden position2_0_2 0.33628074587737455
-  hidden position3_0_2 -0.14263317766952557
-  hidden linearVelocity_0 -1.8157438919129805e-15 4.216266500533608e-15 0
-  hidden angularVelocity_0 -8.501180312321305e-17 1.2200266020445603e-15 -5.914774435809079e-15
-  hidden rotation_11 0 1 0 2.257522674832052
-  hidden linearVelocity_11 -2.4198712325647195e-15 2.6400130368345366e-15 1.737232491483748e-16
-  hidden angularVelocity_11 -3.5840058494334925e-15 -1.2640210418767034e-15 -1.7127692691530463e-15
-  hidden rotation_12 -0.42778250060633954 2.1909748435033084e-06 0.9038817025309157 3.141594220247032
-  hidden linearVelocity_12 2.5882630025545267e-15 -2.2888290107547734e-15 4.564923365590806e-16
-  hidden angularVelocity_12 -1.6633274683720418e-16 4.719655307199995e-15 -3.2450178141311664e-16
-  hidden rotation_13 -0.9394309840196121 0.20891159011011118 -0.27170825122106274 1.1134406999951263
-  hidden linearVelocity_13 -3.0686900458405192e-15 3.9872987190890165e-15 -8.105901888919636e-14
-  hidden angularVelocity_13 -9.968246640071918e-13 -7.671724745377171e-13 -0.000755978404886225
   translation -0.7428936765703003 -1.1994626767849257 -0.0001491379606123333
-  rotation 0.0013189560509921376 0.0005434963434158294 0.9999989824828123 -2.356177733518588
+  rotation 0.000933641122774924 0.0009302211223251899 0.9999991315010816 -3.141575307179586
   name "Robot"
   controller "<extern>"
   extensionSlot [
@@ -462,4 +440,26 @@ TurtleBot3Burger {
     RobotisLds01 {
     }
   ]
+}
+Pedestrian {
+  translation -2.72 -3.48 1.27
+}
+Dog {
+  translation -5.29 -0.74 0
+  rotation 0 0 1 -1.5707953071795862
+}
+FifaSoccerBall {
+  translation -4.87 -3.93 0.12
+}
+FireExtinguisher {
+  translation -3.92 -0.52 0
+}
+Gnome {
+  translation -6.86 -2.47 0
+}
+BunchOfSunFlowers {
+  translation -9.32 -5.89 0
+}
+RubberDuck {
+  translation -5.58 -5.7 0.02
 }

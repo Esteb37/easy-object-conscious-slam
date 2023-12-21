@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <functional>
+#include <tf2/utils.h>
 #include <webots/position_sensor.h>
 #include <webots/robot.h>
 
@@ -36,8 +37,8 @@ namespace Robot
     broadcast();
 
     // Drive simulation
-    wb_motor_set_velocity(rightMotor_, (cmdVelMsg_.linear.x - cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
-    wb_motor_set_velocity(leftMotor_, (cmdVelMsg_.linear.x + cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
+    wb_motor_set_velocity(rightMotor_, (cmdVelMsg_.linear.x + cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
+    wb_motor_set_velocity(leftMotor_, (cmdVelMsg_.linear.x - cmdVelMsg_.angular.z * TRACK_WIDTH) / WHEEL_RADIUS);
   }
 
   void Robot::cmdVelCallback(const Velocity::SharedPtr msg)
@@ -61,10 +62,6 @@ namespace Robot
         std::bind(&Robot::lidarCallback, this, std::placeholders::_1));
 
     odomPublisher_ = node_->create_publisher<Odom>("/odom", rclcpp::SensorDataQoS().reliable());
-
-    velocityPublisher_ = node_->create_publisher<Velocity>("/velocity", rclcpp::SensorDataQoS().reliable());
-    rightWheelPublisher_ = node_->create_publisher<Float32>("/right_wheel", rclcpp::SensorDataQoS().reliable());
-    leftWheelPublisher_ = node_->create_publisher<Float32>("/left_wheel", rclcpp::SensorDataQoS().reliable());
 
     lidar_.header.frame_id = "LDS_01";
     lidarPublisher_ = node_->create_publisher<Lidar>("/scan", rclcpp::SensorDataQoS().reliable());
@@ -120,24 +117,47 @@ namespace Robot
       firstReading_ = false;
     }
 
-    float rightWheelSpeed = (rightWheelPosition - lastRightWheelPosition_) / dt.seconds();
-    float leftWheelSpeed = (leftWheelPosition - lastLeftWheelPosition_) / dt.seconds();
+    // Calculate wheel velocities
+    float rightWheelVelocityRadS = (rightWheelPosition - lastRightWheelPosition_) / dt.seconds();
+    float leftWheelVelocityRadS = (leftWheelPosition - lastLeftWheelPosition_) / dt.seconds();
 
+    // Calculate robot velocity
+    float linearVelocity = (rightWheelVelocityRadS + leftWheelVelocityRadS) * WHEEL_RADIUS / 2.0f;
+    float angularVelocity = (rightWheelVelocityRadS - leftWheelVelocityRadS) * WHEEL_RADIUS / TRACK_WIDTH;
+
+    // Calculate robot pose
+    float deltaTheta = angularVelocity * dt.seconds();
+
+    // Update robot heading
+    tf2::Quaternion prevQuat;
+    prevQuat.setX(currentPose_.pose.pose.orientation.x);
+    prevQuat.setY(currentPose_.pose.pose.orientation.y);
+    prevQuat.setZ(currentPose_.pose.pose.orientation.z);
+    prevQuat.setW(currentPose_.pose.pose.orientation.w);
+
+    float prevHeading = tf2::impl::getYaw(prevQuat);
+    float newHeading = prevHeading + deltaTheta;
+
+    tf2::Quaternion newQuat;
+    newQuat.setRPY(0.0, 0.0, newHeading);
+    currentPose_.pose.pose.orientation.x = newQuat.x();
+    currentPose_.pose.pose.orientation.y = newQuat.y();
+    currentPose_.pose.pose.orientation.z = newQuat.z();
+    currentPose_.pose.pose.orientation.w = newQuat.w();
+
+    // Update robot position
+    float deltaX = linearVelocity * cos(newHeading) * dt.seconds();
+    float deltaY = linearVelocity * sin(newHeading) * dt.seconds();
+
+    currentPose_.pose.pose.position.x += deltaX;
+    currentPose_.pose.pose.position.y += deltaY;
+
+    currentPose_.twist.twist.linear.x = linearVelocity;
+    currentPose_.twist.twist.angular.z = angularVelocity;
+
+    // Update last wheel position
     lastRightWheelPosition_ = rightWheelPosition;
     lastLeftWheelPosition_ = leftWheelPosition;
-
-    currentVelocity_.linear.x = (rightWheelSpeed + leftWheelSpeed) * WHEEL_RADIUS / 2.0;
-    currentVelocity_.angular.z = (rightWheelSpeed - leftWheelSpeed) * WHEEL_RADIUS / TRACK_WIDTH;
-
-    currentPose_.header.stamp = currentTime;
-
-    currentPose_.pose.pose.position.x += currentVelocity_.linear.x * dt.seconds() * cos(currentPose_.pose.pose.orientation.z);
-
-    currentPose_.pose.pose.position.y += currentVelocity_.linear.x * dt.seconds() * sin(currentPose_.pose.pose.orientation.z);
-
-    currentPose_.pose.pose.orientation.z += currentVelocity_.angular.z * dt.seconds();
-
-    currentPose_.twist.twist = currentVelocity_;
   }
 
   void Robot::broadcast()
@@ -150,7 +170,6 @@ namespace Robot
 
     lidarPublisher_->publish(lidar_);
     odomPublisher_->publish(currentPose_);
-    velocityPublisher_->publish(currentVelocity_);
 
     odomTransform_.header.stamp = currentTime;
     odomTransform_.transform.translation.x = currentPose_.pose.pose.position.x;
