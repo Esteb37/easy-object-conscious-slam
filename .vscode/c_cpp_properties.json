@@ -6,8 +6,8 @@
                 "${workspaceFolder}/**",
                 "/mnt/c/Program Files/Webots/include/controller/cpp/webots/**",
                 "/opt/ros/humble/include/**",
-
-                "!/mnt/c/Program Files/Webots/include/controller/cpp/webots/Robot.hpp"
+                "!/mnt/c/Program Files/Webots/include/controller/cpp/webots/Robot.hpp",
+                "/usr/include/opencv4"
             ],
             "defines": [],
             "cStandard": "c17",

@@ -20,6 +20,8 @@
   <depend>nav_msgs</depend>
   <depend>webots_ros2_driver</depend>
   <depend>pluginlib</depend>
+  <depend>cv_bridge</depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
