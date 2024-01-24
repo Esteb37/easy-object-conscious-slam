@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 import cv2
 import numpy as np
 from ultralytics import YOLO
+import cv_bridge
 
 def string_to_rgb_color(string):
     # Compute the hash value of the string
@@ -17,18 +18,6 @@ def string_to_rgb_color(string):
     blue = hash_value & 0x0000FF
 
     return (blue, green, red)
-
-
-
-def msg_to_image(msg):
-    width = msg.width
-    height = msg.height
-    channels = msg.step // msg.width
-    img_data = np.frombuffer(msg.data, dtype=np.uint8).reshape((height, width, channels))
-    # strip the fourth channel
-    if channels == 4:
-        img_data = img_data[:, :, :3]
-    return img_data
 
 class YOLONode(Node):
 
@@ -47,21 +36,10 @@ class YOLONode(Node):
         self.model = YOLO("/home/esteb37/ocslam/resource/best.pt")
         self.LOG("YOLO Model Loaded")
 
-    def image_to_msg(self, image):
-        height, width, channels = image.shape
-        encoding = 'bgr8'
-        img_msg = Image()
-        img_msg.header.stamp = self.get_clock().now().to_msg()
-        img_msg.header.frame_id = 'camera_frame'
-        img_msg.height = height
-        img_msg.width = width
-        img_msg.encoding = encoding
-        img_msg.step = width * channels
-        img_msg.data = image.tobytes()
-        return img_msg
+
 
     def image_callback(self, msg):
-        image = msg_to_image(msg)
+        image = cv_bridge.CvBridge().imgmsg_to_cv2(msg, desired_encoding='bgr8')
         original_image = image.copy()
         image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
         results = self.model(image, imgsz=(self.HEIGHT, self.WIDTH), conf = self.CONFIDENCE_THRESHOLD)
@@ -76,10 +54,17 @@ class YOLONode(Node):
             class_name = class_names[classes[i]]
             color = string_to_rgb_color(class_name)
             cv2.rectangle(original_image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
-            cv2.putText(original_image, class_name+" {:.2f}".format(confidences[i]), (int(x1), int(y1-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
 
-        self.image_publisher.publish(self.image_to_msg(original_image))
+            message = class_name+" {:.2f}".format(confidences[i])
+            (text_width, text_height) = cv2.getTextSize(message, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, thickness=1)[0]
+            cv2.rectangle(original_image, (int(x1), int(y1)), (int(x1 + text_width), int(y1 - text_height)), color, cv2.FILLED)
+            foreground = (0, 0, 0) if color[0] + color[1] + color[2] > 255 else (255, 255, 255)
+
+            cv2.putText(original_image, message, (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, color=foreground, thickness=1)
+
+        image_msg = cv_bridge.CvBridge().cv2_to_imgmsg(original_image, encoding='bgr8')
+        self.image_publisher.publish(image_msg)
 
     def LOG(self, msg):
         self.get_logger().info(str(msg))
