@@ -58,6 +58,12 @@ def generate_launch_description():
         ]
     )
 
+    # yolo_node python file
+    yolo_node = Node(
+        package='ocslam',
+        executable='YOLO.py'
+    )
+
     return LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='gui', default_value='True',
                                             description='Flag to enable joint_state_publisher_gui'),
@@ -68,4 +74,4 @@ def generate_launch_description():
         joint_state_publisher_node,
         joint_state_publisher_gui_node,
         robot_state_publisher_node,
-        ocslam_driver, main])
+        ocslam_driver, yolo_node, main])

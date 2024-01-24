@@ -1,0 +1,15 @@
+path: "/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/resource/dataset/224/0"
+train: "train"
+val: "test"
+names:
+  0: ball
+  1: dog
+  2: gnome
+  3: table
+  4: chair
+  5: door
+  6: duck
+  7: person
+  8: extinguisher
+  9: flowers
+  10: shelf

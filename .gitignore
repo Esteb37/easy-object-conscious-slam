@@ -1,3 +1,6 @@
 /build
 /log
 /install/ocslam
+/resource/dataset
+dataset
+/data/training

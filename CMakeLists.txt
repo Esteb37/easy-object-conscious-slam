@@ -17,6 +17,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(webots_ros2_driver REQUIRED)
 
+ament_python_install_package(${PROJECT_NAME})
 
 # Export the plugin configuration file
 pluginlib_export_plugin_description_file(webots_ros2_driver ocslam.xml)
@@ -90,8 +91,10 @@ include_directories(
 )
 
 install(PROGRAMS
+  scripts/YOLO.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
 
 ament_export_libraries(
   ${PROJECT_NAME}
