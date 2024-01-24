@@ -6,7 +6,7 @@
 [1.398s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) check parameters
 [1.398s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(colcon_meta) discover
 [1.399s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) discover
-[1.399s] [34mcolcon.colcon_core.package_discovery[0m [1;30mINFO[0m Crawling recursively for packages in '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src'
+[1.399s] [34mcolcon.colcon_core.package_discovery[0m [1;30mINFO[0m Crawling recursively for packages in '/home/esteb37/ocslam/run/ocslam/src'
 [1.401s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['ignore', 'ignore_ament_install']
 [1.401s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore'
 [1.401s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore_ament_install'
@@ -66,13 +66,13 @@
 [1.799s] [34mcolcon.colcon_notification.desktop_notification.notify2[0m [1;30mDEBUG[0m [32mFailed to initialize notify2: org.freedesktop.DBus.Error.FileNotFound: Failed to connect to socket /run/user/1000/bus: No such file or directory[0m
 [1.799s] [34mcolcon.colcon_core.event_reactor[0m [1;30mDEBUG[0m [32mjoined thread[0m
 [1.822s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
-[1.822s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/local_setup.ps1'
-[1.829s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/_local_setup_util_ps1.py'
-[1.837s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/setup.ps1'
-[1.860s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/local_setup.sh'
-[1.867s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/_local_setup_util_sh.py'
-[1.875s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/setup.sh'
-[1.897s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/local_setup.bash'
-[1.904s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/setup.bash'
-[1.926s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/local_setup.zsh'
-[1.934s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/src/install/setup.zsh'
+[1.822s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/esteb37/ocslam/run/ocslam/src/install/local_setup.ps1'
+[1.829s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/home/esteb37/ocslam/run/ocslam/src/install/_local_setup_util_ps1.py'
+[1.837s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/esteb37/ocslam/run/ocslam/src/install/setup.ps1'
+[1.860s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/esteb37/ocslam/run/ocslam/src/install/local_setup.sh'
+[1.867s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/home/esteb37/ocslam/run/ocslam/src/install/_local_setup_util_sh.py'
+[1.875s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/esteb37/ocslam/run/ocslam/src/install/setup.sh'
+[1.897s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/esteb37/ocslam/run/ocslam/src/install/local_setup.bash'
+[1.904s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/esteb37/ocslam/run/ocslam/src/install/setup.bash'
+[1.926s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/esteb37/ocslam/run/ocslam/src/install/local_setup.zsh'
+[1.934s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/esteb37/ocslam/run/ocslam/src/install/setup.zsh'

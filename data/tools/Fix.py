@@ -5,7 +5,7 @@ import numpy as np
 
 
 #find all files named "DogDog..." and rename them to "Dog..."
-outputs_path = "/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/resource/outputs"
+outputs_path = "/home/esteb37/ocslam/run/ocslam/resource/outputs"
 
 
 classes = ["ball","dog","gnome","table","chair","door","duck","person","extinguisher","flowers","shelf"]

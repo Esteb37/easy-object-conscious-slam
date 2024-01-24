@@ -2,7 +2,7 @@ import cv2
 import os
 
 object_name = "Ball"
-image_directory = "/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/resource/images/all"
+image_directory = "/home/esteb37/ocslam/run/ocslam/resource/images/all"
 
 parent_directory = os.path.dirname(image_directory)
 

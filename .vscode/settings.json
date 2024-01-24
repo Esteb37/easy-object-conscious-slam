@@ -80,5 +80,6 @@
     "source_location": "cpp",
     "valarray": "cpp"
   },
-  "C_Cpp.default.compilerPath": "/usr/bin/cpp"
+  "C_Cpp.default.compilerPath": "/usr/bin/cpp",
+    "python.linting.pylintArgs": ["--generate-members"],
 }

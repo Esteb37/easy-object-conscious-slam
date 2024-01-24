@@ -4,7 +4,6 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import Command, LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
-from webots_ros2_driver.webots_launcher import WebotsLauncher
 from webots_ros2_driver.webots_controller import WebotsController
 
 
@@ -21,19 +20,13 @@ def generate_launch_description():
         parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model')])}]
     )
 
+
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        condition=launch.conditions.UnlessCondition(LaunchConfiguration('gui'))
     )
 
-    joint_state_publisher_gui_node = Node(
-        package='joint_state_publisher_gui',
-        executable='joint_state_publisher_gui',
-        name='joint_state_publisher_gui',
-        condition=launch.conditions.IfCondition(LaunchConfiguration('gui'))
-    )
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -72,6 +65,6 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
                                             description='Absolute path to rviz config file'),
         joint_state_publisher_node,
-        joint_state_publisher_gui_node,
         robot_state_publisher_node,
-        ocslam_driver, yolo_node, main])
+        ocslam_driver,
+        yolo_node, main, rviz_node])

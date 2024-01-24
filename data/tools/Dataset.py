@@ -3,9 +3,9 @@ import os
 import numpy as np
 
 
-path = "/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/resource/outputs"
+path = "/home/esteb37/ocslam/run/ocslam/resource/outputs"
 
-dataset_path = "/mnt/c/Users/esteb/OneDrive/Documents/Ulm/Homework/Learning/ros_ws/src/ocslam/resource/dataset"
+dataset_path = "/home/esteb37/ocslam/run/ocslam/resource/dataset"
 
 images = [f for f in os.listdir(path) if f.endswith(".png")]
 
