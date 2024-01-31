@@ -8,10 +8,10 @@ classes = ["ball","dog","gnome","table","chair","door","duck","person","extingui
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
 # cambiar para tu path
-images_path = "/home/esteb37/ocslam/run/ocslam/resource/outputs/"
+images_path = "/home/esteb37/ocslam/resource/outputs/"
 
 # igual cambiar
-output_path = "/home/esteb37/ocslam/run/ocslam/resource/outputs"
+output_path = "/home/esteb37/ocslam/resource/outputs"
 
 top_right = None
 bottom_left = None

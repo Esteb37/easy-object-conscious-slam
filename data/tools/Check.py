@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-path ="/home/esteb37/ocslam/run/ocslam/resource/outputs"
+path ="/home/esteb37/ocslam/resource/outputs"
 
 images = [f for f in os.listdir(path) if f.endswith(".png")]
 

@@ -92,6 +92,7 @@ include_directories(
 
 install(PROGRAMS
   scripts/YOLO.py
+  scripts/Calibration.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -23,7 +23,7 @@ class YOLONode(Node):
 
     WIDTH = 224
     HEIGHT = 168
-    CONFIDENCE_THRESHOLD = 0.7
+    CONFIDENCE_THRESHOLD = 0.2
 
     def __init__(self):
         # Initialize the ROS node
@@ -49,9 +49,12 @@ class YOLONode(Node):
         confidences = boxes.conf.cpu().numpy()
         classes = boxes.cls.cpu().numpy()
         class_names = results[0].names
+
         for i, box in enumerate(positions):
             x1, y1, x2, y2 = box
             class_name = class_names[classes[i]]
+            if class_name == "chair":
+              continue
             color = string_to_rgb_color(class_name)
             cv2.rectangle(original_image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 

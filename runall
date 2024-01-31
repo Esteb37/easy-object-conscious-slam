@@ -1,0 +1,7 @@
+source install/local_setup.bash
+export LD_LIBRARY_PATH=/home/esteb37/ocslam/install/ocslam/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/home/esteb37/ocslam/install/ocslam/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib/controller
+
+ros2 launch ocslam robot_launch_model.py &
+ros2 launch nav2_bringup slam_launch.py &
+ros2 run teleop_twist_keyboard teleop_twist_keyboard teleop_twist_keyboard &
+ros2 run rqt_image_view rqt_image_view

@@ -13,7 +13,7 @@ namespace Robot
   {
 
     camera_topic_ = "/Robot/Astra_rgb/image_color";
-    save_folder_ = "/home/esteb37/ocslam/run/ocslam/resource/images"; // Replace with the desired save folder
+    save_folder_ = "/home/esteb37/ocslam/resource/images"; // Replace with the desired save folder
 
     image_subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
         camera_topic_, rclcpp::SensorDataQoS().reliable(),

@@ -1,7 +1,7 @@
 from ultralytics import RTDETR
 import os
 
-path = "/home/esteb37/ocslam/run/ocslam/resource/"
+path = "/home/esteb37/ocslam/resource/"
 
 models = [#{"model_size": "n", "image_size": 640, "batch_size": 16},
           #{"model_size": "n", "image_size": 320, "batch_size": 32},

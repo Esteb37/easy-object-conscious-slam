@@ -1,0 +1,65 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/robotis/turtlebot/protos/TurtleBot3Burger.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/orbbec/protos/Astra.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/robotis/protos/RobotisLds01.proto"
+EXTERNPROTO "../protos/PhotoFrame.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.000680207343749069 -0.9999994249689282 -0.0008290837004917602 4.904885586415658
+  position -1.1679679212043819 0.09092598852339143 5.725168745111469
+}
+RectangleArena {
+  floorSize 10 10
+}
+PhotoFrame {
+  translation 0.892838 6.77954e-18 0.212144
+  rotation -0.25163385176495073 0 0.9678225067882721 3.141592653589793
+  pictureUrl [
+    "chess.jpg"
+    ""
+  ]
+  frameAppearance NULL
+}
+TurtleBot3Burger {
+  hidden position_0_0 137.48548137301023
+  hidden position_0_1 167.43101149027544
+  hidden position_0_2 -639.5769095723498
+  hidden position2_0_2 80.2236489849931
+  hidden position3_0_2 -5047.337911876821
+  hidden linearVelocity_0 1.4798753974898538e-08 4.28738404687347e-09 -4.166341146989835e-11
+  hidden angularVelocity_0 3.1912145503249744e-12 -1.3014174665118184e-09 -3.806922200668712e-08
+  hidden translation_11 -2.973914867235356e-06 -0.08000000004323422 0.03300325728507291
+  hidden rotation_11 7.142717535872976e-12 -0.9999999999999999 -3.1704145455077657e-12 2.3153913848098817
+  hidden linearVelocity_11 1.1797542634496824e-08 3.0536409241951277e-09 2.610401704176218e-13
+  hidden angularVelocity_11 2.496188778189459e-12 -4.2112821251078604e-10 -3.806919898679112e-08
+  hidden translation_12 -3.5636355327860557e-06 0.07999999995646428 0.03299734918935181
+  hidden rotation_12 -0.31655979752849794 2.08151125568806e-06 0.9485725563099452 3.141594733302259
+  hidden linearVelocity_12 1.788877210873549e-08 3.0581186241567057e-09 6.133319601066939e-13
+  hidden angularVelocity_12 2.2554023935316686e-12 -3.6885264947322383e-13 -3.80691871532778e-08
+  hidden translation_13 -0.08100525336607589 -1.0735533328472554e-06 0.00400305636732308
+  hidden rotation_13 -0.6925619161624954 -0.07554282309832465 0.7173919947697132 3.142370733097152
+  hidden linearVelocity_13 1.4919815942724937e-08 6.2221663864724946e-09 -1.7584172586225026e-12
+  hidden angularVelocity_13 -4.611884409187822e-06 1.8581422850819234e-05 -1.4221742258841732e-05
+  translation 0.5081052285552401 -0.0005925732259080699 -0.0002975816206277765
+  rotation 0.005332676125506623 -0.9907717159117196 0.13543621936058026 0.005403173764975173
+  name "Robot"
+  controller "<extern>"
+  extensionSlot [
+    Astra {
+    }
+    RobotisLds01 {
+    }
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction 1 1 1
+  intensity 10
+}
+TexturedBackground {
+}

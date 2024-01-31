@@ -57,6 +57,11 @@ def generate_launch_description():
         executable='YOLO.py'
     )
 
+    calibration_node = Node(
+        package='ocslam',
+        executable='Calibration.py'
+    )
+
     return LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='gui', default_value='True',
                                             description='Flag to enable joint_state_publisher_gui'),
@@ -66,5 +71,5 @@ def generate_launch_description():
                                             description='Absolute path to rviz config file'),
         joint_state_publisher_node,
         robot_state_publisher_node,
-        ocslam_driver,
+        ocslam_driver, calibration_node,
         yolo_node, main, rviz_node])
