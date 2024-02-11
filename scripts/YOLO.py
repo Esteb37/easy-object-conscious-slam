@@ -3,8 +3,8 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from std_msgs.msg import Int32MultiArray
 import cv2
-import numpy as np
 from ultralytics import YOLO
 import cv_bridge
 
@@ -31,6 +31,7 @@ class YOLONode(Node):
 
         self.image_subscriber = self.create_subscription(Image, '/Robot/Astra_rgb/image_color', self.image_callback, 10)
         self.image_publisher = self.create_publisher(Image, '/yolo_image', 10)
+        self.yolo_publisher = self.create_publisher(Int32MultiArray, '/yolo_boxes', 10)
 
         self.LOG("Loading YOLO Model")
         self.model = YOLO("/home/esteb37/ocslam/resource/best.pt")
@@ -50,6 +51,8 @@ class YOLONode(Node):
         classes = boxes.cls.cpu().numpy()
         class_names = results[0].names
 
+        yolo_msg = Int32MultiArray()
+
         for i, box in enumerate(positions):
             x1, y1, x2, y2 = box
             class_name = class_names[classes[i]]
@@ -66,8 +69,19 @@ class YOLONode(Node):
 
             cv2.putText(original_image, message, (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, color=foreground, thickness=1)
 
+            yolo_msg.data.append(int(x1))
+            yolo_msg.data.append(int(y1))
+            yolo_msg.data.append(int(x2))
+            yolo_msg.data.append(int(y2))
+            yolo_msg.data.append(int(confidences[i]*100))
+            yolo_msg.data.append(int(classes[i]))
+
+
         image_msg = cv_bridge.CvBridge().cv2_to_imgmsg(original_image, encoding='bgr8')
         self.image_publisher.publish(image_msg)
+
+        self.yolo_publisher.publish(yolo_msg)
+
 
     def LOG(self, msg):
         self.get_logger().info(str(msg))

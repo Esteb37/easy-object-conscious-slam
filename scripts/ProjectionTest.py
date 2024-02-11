@@ -41,12 +41,9 @@ for y in range(image_height):
 
 
         t = -cam_origin[2] / direction_z
-        if x % 100 == 0 and y < principal_point_y and y % 50 == 0:
+        if x % 100 == 0 and y % 10 == 0:
             world_point = cam_origin + t * np.array([direction_x, direction_y, direction_z])
-
-            # line from the camera to the point
-            ax.plot([cam_origin[0], world_point[0]], [cam_origin[1], world_point[1]], [cam_origin[2], world_point[2]], c='b')
-
+            ax.scatter(world_point[0], world_point[1], world_point[2], c='b', marker='o')
 
 
 
