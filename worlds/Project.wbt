@@ -43,8 +43,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.3064032402697963 0.23131403751706972 0.9233693033666005 1.9240716723996847
-  position 1.0841590165951227 -13.276224679016869 8.12868088492336
+  orientation -0.20515383826067046 0.6042042303921361 0.7699669802161397 0.8306773450469305
+  position -2.107380592334233 -2.282545289027099 1.091508556106032
   exposure 0.5
 }
 TexturedBackground {
@@ -436,6 +436,7 @@ TurtleBot3Burger {
   controller "<extern>"
   extensionSlot [
     Astra {
+      translation 0 0 0.03
     }
     RobotisLds01 {
     }
