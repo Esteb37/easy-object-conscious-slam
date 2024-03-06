@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import numpy as np
 import matplotlib.pyplot as plt
+from shapely.geometry import Point, Polygon
 
 def pose_msg_to_numpy(pose_msg):
     # Extract rotation quaternion from pose message
@@ -74,7 +75,10 @@ class ProjectionNode(Node):
         self.translation_vector = np.array([0, 0, self.CAM_HEIGHT])
 
         self.corners = [self.project_point(corner) for corner in
-                        [(0, 0), (640, 0), (0, 480), (640, 480)]]
+                        [(0, 0),
+                         (640, 0),
+                         (0, 480),
+                         (640, 480)]]
 
         angles = [np.arctan2(coord[1], coord[0]) for coord in self.corners]
 
@@ -105,14 +109,12 @@ class ProjectionNode(Node):
             self.ax2.legend()
 
 
-            top_left = self.project_point([x1, y1])
-            bottom_right = self.project_point([x2, y2])
-            top_right = self.project_point([x2, y1])
-            bottom_left = self.project_point([x1, y2])
-            angles = [np.arctan2(coord[1], coord[0]) for coord in [top_left, top_right, bottom_left, bottom_right]]
-            angle_min = min(angles)
-            angle_max = max(angles)
-            self.yolo_corners.append([top_left, top_right, bottom_left, bottom_right, angle_min, angle_max, class_index])
+            top_right = self.project_point([x1, y1])
+            bottom_left = self.project_point([x2, y2])
+            bottom_right = self.project_point([x2, y1])
+            top_left = self.project_point([x1, y2])
+
+            self.yolo_corners.append([top_left, bottom_left, bottom_right, top_right, class_index])
 
     def pose_callback(self, msg):
         pass
@@ -132,14 +134,15 @@ class ProjectionNode(Node):
         bottom_right = self.corners[3]
 
         self.ax.plot([top_left[0], top_right[0], bottom_right[0], bottom_left[0], top_left[0]],
-               [top_left[1], top_right[1], bottom_right[1], bottom_left[1], top_left[1]], 'r-', label = "Camera view")
+            [top_left[1], top_right[1], bottom_right[1], bottom_left[1], top_left[1]], 'r--', label = "Camera view")
 
-        #plot yolo bounds
+        self.ax.add_patch(plt.Circle((0, 0), self.MAX_RANGE, color='black', linestyle="--", fill=False))
         for box in self.yolo_corners:
-          top_left, top_right, bottom_left, bottom_right, angle_min, angle_max, class_index = box
+          top_left, bottom_left, bottom_right, top_right, class_index = box
           color = string_to_rgb_color(self.CLASS_NAMES[class_index])
-          self.ax.plot([top_left[0], top_right[0], bottom_right[0], bottom_left[0], top_left[0]],
-               [top_left[1], top_right[1], bottom_right[1], bottom_left[1], top_left[1]], color=color, linestyle="--", label = self.CLASS_NAMES[class_index])
+
+          self.ax.plot([top_left[0], bottom_left[0], bottom_right[0], top_right[0], top_left[0]],
+                        [top_left[1], bottom_left[1], bottom_right[1], top_right[1], top_left[1]], color=color, label=self.CLASS_NAMES[class_index])
 
         self.ax.legend()
 
@@ -147,16 +150,16 @@ class ProjectionNode(Node):
             if point != float('inf'):
                 # get the angle of the point
                 angle = msg.angle_min + msg.angle_increment * self.lidar.index(point)
-
-
                 # get the x and y coordinates of the point
                 x = point * np.cos(angle)
                 y = point * np.sin(angle)
 
-                if angle < self.camera_angle_min or angle > self.camera_angle_max:
-                    self.ax.plot(x, y, 'b.')
-                else:
+                if angle > self.camera_angle_min and angle < self.camera_angle_max:
                     self.ax.plot(x, y, 'r.')
+                    for box in self.yolo_corners:
+                        if Polygon(box[:4]).contains(Point(x, y)):
+                            self.ax.plot(x, y, color=string_to_rgb_color(self.CLASS_NAMES[box[4]]), marker='o')
+
 
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
@@ -168,26 +171,30 @@ class ProjectionNode(Node):
 
 
     def project_point(self, image_point):
-        x = image_point[0]
-        y = image_point[1]
-        u = (x - self.principal_point_x) / self.focal_length_x
+      x = image_point[0]
+      y = image_point[1]
+      u = (x - self.principal_point_x) / self.focal_length_x
+      v = (min(y, self.principal_point_y - 1) - self.principal_point_y) / self.focal_length_y
+      length = np.sqrt(u**2 + v**2 + 1)
+      # the camera is looking towards the positive X plane
+      direction_x = 1 / length
+      direction_y = -u / length
+      direction_z = v / length
 
-        v = (min(y, self.principal_point_y - 1) - self.principal_point_y) / self.focal_length_y
-        length = np.sqrt(u**2 + v**2 + 1)
-        # the camera is looking towards the positive X plane
-        direction_x = 1 / length
-        direction_y = -u / length
-        direction_z = v / length
+      direction = np.dot(self.rotation_matrix, [direction_x, direction_y, direction_z])
 
-        direction = np.dot(self.rotation_matrix, [direction_x, direction_y, direction_z])
+      # Calculate intersection with ground plane (z = 0)
+      if direction[2] != 0:
+        t_ground = -self.translation_vector[2] / direction[2]
+        world_point_ground = self.translation_vector + t_ground * np.array([direction[0], direction[1], direction[2]])
+        if np.linalg.norm(world_point_ground - self.translation_vector) <= self.MAX_RANGE:
+          return world_point_ground
 
-        t = -self.translation_vector[2] / direction[2]
-        world_point = self.translation_vector + t * np.array([direction[0], direction[1], direction[2]])
+      # If intersection with ground plane is not within MAX_RANGE, return point on ray at MAX_RANGE
+      t_max_range = self.MAX_RANGE / np.linalg.norm(direction)
+      world_point_max_range = self.translation_vector + t_max_range * np.array([direction[0], direction[1], direction[2]])
 
-        # clip to 10 meters
-        #world_point = np.clip(world_point, -self.MAX_RANGE, self.MAX_RANGE)
-        return world_point
-
+      return world_point_max_range
 
     def LOG(self, msg):
         self.get_logger().info(str(msg))
