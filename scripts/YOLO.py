@@ -73,7 +73,6 @@ class YOLONode(Node):
             yolo_msg.data.append(int(y1))
             yolo_msg.data.append(int(x2))
             yolo_msg.data.append(int(y2))
-            yolo_msg.data.append(int(confidences[i]*100))
             yolo_msg.data.append(int(classes[i]))
 
 

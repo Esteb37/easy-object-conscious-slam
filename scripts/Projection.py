@@ -37,6 +37,11 @@ def string_to_rgb_color(string):
 
     return (blue / 255, green / 255, red / 255)
 
+def x_vals(array):
+  return [point[0] for point in array] + [array[0][0]]
+
+def y_vals(array):
+  return [point[1] for point in array] + [array[0][1]]
 
 class ProjectionNode(Node):
 
@@ -54,6 +59,9 @@ class ProjectionNode(Node):
 
     CAM_HEIGHT = 0.18
     MAX_RANGE = 4
+
+    IMAGE_WIDTH = 640
+    IMAGE_HEIGHT = 480
 
     def __init__(self):
         super().__init__('Projection')
@@ -74,13 +82,13 @@ class ProjectionNode(Node):
         self.rotation_matrix = np.identity(3)
         self.translation_vector = np.array([0, 0, self.CAM_HEIGHT])
 
-        self.corners = [self.project_point(corner) for corner in
+        self.camera_corners = [self.project_point(corner) for corner in
                         [(0, 0),
-                         (640, 0),
-                         (0, 480),
-                         (640, 480)]]
+                         (self.IMAGE_WIDTH, 0),
+                         (self.IMAGE_WIDTH, self.IMAGE_HEIGHT),
+                         (0, self.IMAGE_HEIGHT)]]
 
-        angles = [np.arctan2(coord[1], coord[0]) for coord in self.corners]
+        angles = [np.arctan2(coord[1], coord[0]) for coord in self.camera_corners]
 
         # get angle range
         self.camera_angle_min = min(angles)
@@ -97,17 +105,17 @@ class ProjectionNode(Node):
     def yolo_callback(self, msg):
         self.yolo_corners = []
         self.ax2.clear()
-        self.ax2.set_xlim(0, 640)
-        self.ax2.set_ylim(0, 480)
-        for i in range(0, len(msg.data), 6):
-            x1, y1, x2, y2, confidence, class_index = msg.data[i:i+6]
-            y1 = 480 - y1
-            y2 = 480 -  y2
+        self.ax2.set_xlim(0, self.IMAGE_WIDTH)
+        self.ax2.set_ylim(0, self.IMAGE_HEIGHT)
 
-            color = string_to_rgb_color(self.CLASS_NAMES[class_index])
-            self.ax2.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color=color, label = self.CLASS_NAMES[class_index])
-            self.ax2.legend()
+        for i in range(0, len(msg.data), 5):
+            x1, y1, x2, y2, class_index = msg.data[i:i+5]
+            y1 = self.IMAGE_HEIGHT - y1
+            y2 = self.IMAGE_HEIGHT -  y2
 
+            label = self.CLASS_NAMES[class_index]
+            color = string_to_rgb_color(label)
+            self.ax2.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color=color, label=label)
 
             top_right = self.project_point([x1, y1])
             bottom_left = self.project_point([x2, y2])
@@ -116,6 +124,8 @@ class ProjectionNode(Node):
 
             self.yolo_corners.append([top_left, bottom_left, bottom_right, top_right, class_index])
 
+        self.ax2.legend()
+
     def pose_callback(self, msg):
         pass
 
@@ -123,26 +133,17 @@ class ProjectionNode(Node):
         self.lidar = msg.ranges
 
         self.ax.clear()
-
         self.ax.set_xlim(0, self.MAX_RANGE*1.1)
         self.ax.set_ylim(-self.MAX_RANGE*1.1, self.MAX_RANGE*1.1)
 
-        # plot camera bound
-        top_left = self.corners[0]
-        top_right = self.corners[1]
-        bottom_left = self.corners[2]
-        bottom_right = self.corners[3]
+        # Plot camera bound
+        self.ax.plot(x_vals(self.camera_corners),y_vals(self.camera_corners), 'r--', label="Camera view")
 
-        self.ax.plot([top_left[0], top_right[0], bottom_right[0], bottom_left[0], top_left[0]],
-            [top_left[1], top_right[1], bottom_right[1], bottom_left[1], top_left[1]], 'r--', label = "Camera view")
-
-        self.ax.add_patch(plt.Circle((0, 0), self.MAX_RANGE, color='black', linestyle="--", fill=False))
         for box in self.yolo_corners:
-          top_left, bottom_left, bottom_right, top_right, class_index = box
-          color = string_to_rgb_color(self.CLASS_NAMES[class_index])
-
-          self.ax.plot([top_left[0], bottom_left[0], bottom_right[0], top_right[0], top_left[0]],
-                        [top_left[1], bottom_left[1], bottom_right[1], top_right[1], top_left[1]], color=color, label=self.CLASS_NAMES[class_index])
+          corners = box[:4]
+          label = self.CLASS_NAMES[box[4]]
+          color = string_to_rgb_color(label)
+          self.ax.plot(x_vals(corners), y_vals(corners), color=color, linestyle="-", label=label)
 
         self.ax.legend()
 
@@ -155,46 +156,37 @@ class ProjectionNode(Node):
                 y = point * np.sin(angle)
 
                 if angle > self.camera_angle_min and angle < self.camera_angle_max:
-                    self.ax.plot(x, y, 'r.')
+                    found = False
                     for box in self.yolo_corners:
                         if Polygon(box[:4]).contains(Point(x, y)):
                             self.ax.plot(x, y, color=string_to_rgb_color(self.CLASS_NAMES[box[4]]), marker='o')
+                            found = True
+                            break
+                    if not found:
+                      self.ax.plot(x, y, 'r.')
 
-
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax2.set_xlabel('X')
-        self.ax2.set_ylabel('Y')
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         plt.pause(0.0001)
 
 
     def project_point(self, image_point):
-      x = image_point[0]
-      y = image_point[1]
-      u = (x - self.principal_point_x) / self.focal_length_x
-      v = (min(y, self.principal_point_y - 1) - self.principal_point_y) / self.focal_length_y
-      length = np.sqrt(u**2 + v**2 + 1)
-      # the camera is looking towards the positive X plane
-      direction_x = 1 / length
-      direction_y = -u / length
-      direction_z = v / length
+        x = image_point[0]
+        y = image_point[1]
+        u = (x - self.principal_point_x) / self.focal_length_x
 
-      direction = np.dot(self.rotation_matrix, [direction_x, direction_y, direction_z])
+        v = (min(y, self.principal_point_y - 1) - self.principal_point_y) / self.focal_length_y
+        length = np.sqrt(u**2 + v**2 + 1)
+        # the camera is looking towards the positive X plane
+        direction_x = 1 / length
+        direction_y = -u / length
+        direction_z = v / length
 
-      # Calculate intersection with ground plane (z = 0)
-      if direction[2] != 0:
-        t_ground = -self.translation_vector[2] / direction[2]
-        world_point_ground = self.translation_vector + t_ground * np.array([direction[0], direction[1], direction[2]])
-        if np.linalg.norm(world_point_ground - self.translation_vector) <= self.MAX_RANGE:
-          return world_point_ground
+        direction = np.dot(self.rotation_matrix, [direction_x, direction_y, direction_z])
 
-      # If intersection with ground plane is not within MAX_RANGE, return point on ray at MAX_RANGE
-      t_max_range = self.MAX_RANGE / np.linalg.norm(direction)
-      world_point_max_range = self.translation_vector + t_max_range * np.array([direction[0], direction[1], direction[2]])
-
-      return world_point_max_range
+        t = -self.translation_vector[2] / direction[2]
+        world_point = self.translation_vector + t * np.array([direction[0], direction[1], direction[2]])
+        return world_point
 
     def LOG(self, msg):
         self.get_logger().info(str(msg))
