@@ -74,6 +74,7 @@ class YOLONode(Node):
             yolo_msg.data.append(int(x2))
             yolo_msg.data.append(int(y2))
             yolo_msg.data.append(int(classes[i]))
+            yolo_msg.data.append(int(confidences[i]*100))
 
 
         image_msg = cv_bridge.CvBridge().cv2_to_imgmsg(original_image, encoding='bgr8')

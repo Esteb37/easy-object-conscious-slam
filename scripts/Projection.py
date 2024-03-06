@@ -7,7 +7,10 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, MultiPoint
+from shapely.ops import unary_union
+from matplotlib.patches import Ellipse
+
 
 def pose_msg_to_numpy(pose_msg):
     # Extract rotation quaternion from pose message
@@ -42,6 +45,47 @@ def x_vals(array):
 
 def y_vals(array):
   return [point[1] for point in array] + [array[0][1]]
+
+from shapely.geometry import MultiPolygon
+
+def find_islands(points, threshold):
+
+  # Convert points to Shapely Point objects
+  shapely_points = [Point(x, y) for x, y in points]
+
+  # Create MultiPoint from the list of Shapely Point objects
+  multi_point = MultiPoint(shapely_points)
+
+  # Buffer the MultiPoint to form circles around each point
+  buffered_multi_point = multi_point.buffer(threshold)
+
+  # Merge overlapping circles to form continuous regions
+  merged_multi_point = unary_union(buffered_multi_point)
+
+  # Extract the individual polygons representing connected regions
+  if isinstance(merged_multi_point, MultiPolygon):
+     islands = list(merged_multi_point.geoms)
+  else:
+    islands =  [merged_multi_point]
+
+  ellipses = []
+  for island in islands:
+      # Get the minimum bounding box of the island
+      min_x, min_y, max_x, max_y = island.bounds
+      center_x = (min_x + max_x) / 2
+      center_y = (min_y + max_y) / 2
+      width = max_x - min_x
+      height = max_y - min_y
+
+      # Calculate rotation angle of the ellipse
+      # For simplicity, assume the rotation angle is 0
+      rotation = 0
+
+      # Append ellipse parameters to the list
+      ellipses.append(((center_x, center_y),width,height,rotation))
+
+  return ellipses
+
 
 class ProjectionNode(Node):
 
@@ -102,14 +146,16 @@ class ProjectionNode(Node):
 
 
 
+
+
     def yolo_callback(self, msg):
         self.yolo_corners = []
         self.ax2.clear()
         self.ax2.set_xlim(0, self.IMAGE_WIDTH)
         self.ax2.set_ylim(0, self.IMAGE_HEIGHT)
 
-        for i in range(0, len(msg.data), 5):
-            x1, y1, x2, y2, class_index = msg.data[i:i+5]
+        for i in range(0, len(msg.data), 6):
+            x1, y1, x2, y2, class_index, confidence = msg.data[i:i+6]
             y1 = self.IMAGE_HEIGHT - y1
             y2 = self.IMAGE_HEIGHT -  y2
 
@@ -122,7 +168,7 @@ class ProjectionNode(Node):
             bottom_right = self.project_point([x2, y1])
             top_left = self.project_point([x1, y2])
 
-            self.yolo_corners.append([top_left, bottom_left, bottom_right, top_right, class_index])
+            self.yolo_corners.append([top_left, bottom_left, bottom_right, top_right, label, confidence])
 
         self.ax2.legend()
 
@@ -131,6 +177,10 @@ class ProjectionNode(Node):
 
     def lidar_callback(self, msg):
         self.lidar = msg.ranges
+
+        # if none or empty return
+        if not self.lidar:
+            return
 
         self.ax.clear()
         self.ax.set_xlim(0, self.MAX_RANGE*1.1)
@@ -141,11 +191,14 @@ class ProjectionNode(Node):
 
         for box in self.yolo_corners:
           corners = box[:4]
-          label = self.CLASS_NAMES[box[4]]
+          label = box[4]
           color = string_to_rgb_color(label)
           self.ax.plot(x_vals(corners), y_vals(corners), color=color, linestyle="-", label=label)
 
         self.ax.legend()
+
+
+        groups = {}
 
         for point in self.lidar:
             if point != float('inf'):
@@ -159,12 +212,23 @@ class ProjectionNode(Node):
                     found = False
                     for box in self.yolo_corners:
                         if Polygon(box[:4]).contains(Point(x, y)):
-                            self.ax.plot(x, y, color=string_to_rgb_color(self.CLASS_NAMES[box[4]]), marker='o')
+                            label = box[4]
+                            self.ax.plot(x, y, color=string_to_rgb_color(label), marker='.')
                             found = True
-                            break
+                            groups.setdefault(label, []).append((x, y, box[5]))
+
                     if not found:
                       self.ax.plot(x, y, 'r.')
 
+        # create different arrays for each class
+
+        for label, points in groups.items():
+          islands = find_islands([(x,y) for x, y, _ in points], 0.1)
+          for island in islands:
+            center, width, height, rotation = island
+            self.ax.add_patch(Ellipse(center, width, height, rotation, color=string_to_rgb_color(label), fill=False, linestyle="--"))
+
+        self.ax.legend()
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         plt.pause(0.0001)
