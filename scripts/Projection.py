@@ -9,7 +9,7 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
-
+import time
 
 class ProjectionNode(LogNode):
 
@@ -19,7 +19,7 @@ class ProjectionNode(LogNode):
     IMAGE_WIDTH = 640
     IMAGE_HEIGHT = 480
 
-    PLOT = True
+    PLOT = False
 
     def __init__(self):
         super().__init__('Projection')
@@ -63,7 +63,12 @@ class ProjectionNode(LogNode):
 
         self.yolo_projections = []
 
+        self.lidar = []
+        self.angle_min = 0
+        self.angle_increment = 0
+
     def yolo_callback(self, msg):
+
         self.yolo_projections = []
 
         if self.PLOT:
@@ -96,12 +101,18 @@ class ProjectionNode(LogNode):
         if self.PLOT:
           self.ax2.legend()
 
+        self.classify_markers()
+
     def pose_callback(self, msg):
         pass
 
     def lidar_callback(self, msg):
         self.lidar = msg.ranges
+        self.angle_min = msg.angle_min
+        self.angle_increment = msg.angle_increment
 
+
+    def classify_markers(self):
         # if none or empty return
         if not self.lidar:
             return
@@ -124,7 +135,7 @@ class ProjectionNode(LogNode):
         for point in self.lidar:
             if point != float('inf'):
                 # get the angle of the point
-                angle = msg.angle_min + msg.angle_increment * self.lidar.index(point)
+                angle = self.angle_min + self.angle_increment * self.lidar.index(point)
                 # get the x and y coordinates of the point
                 x = point * np.cos(angle)
                 y = point * np.sin(angle)
@@ -139,10 +150,11 @@ class ProjectionNode(LogNode):
                               self.ax.plot(x, y, color=projection.color, marker='.')
                               found = True
 
-                    if not found and self.PLOT:
+                    if self.PLOT and not found:
                       self.ax.plot(x, y, 'r.')
 
-        # create different arrays for each class
+        if not groups:
+            return
 
         markers = MarkerArray()
         marker_id = 0
@@ -168,6 +180,8 @@ class ProjectionNode(LogNode):
             marker.id = marker_id
             marker.ns = label
             marker_id += 1
+            marker.lifetime = rclpy.duration.Duration(seconds=0.01).to_msg()
+
             markers.markers.append(marker)
 
             if self.PLOT:
