@@ -7,19 +7,9 @@ from std_msgs.msg import Int32MultiArray
 import cv2
 from ultralytics import YOLO
 import cv_bridge
+from Utils import *
 
-def string_to_rgb_color(string):
-    # Compute the hash value of the string
-    hash_value = hash(string)
-
-    # Extract the RGB components from the hash value
-    red = (hash_value & 0xFF0000) >> 16
-    green = (hash_value & 0x00FF00) >> 8
-    blue = hash_value & 0x0000FF
-
-    return (blue, green, red)
-
-class YOLONode(Node):
+class YOLONode(LogNode):
 
     WIDTH = 224
     HEIGHT = 168
@@ -36,7 +26,6 @@ class YOLONode(Node):
         self.LOG("Loading YOLO Model")
         self.model = YOLO("/home/esteb37/ocslam/resource/best.pt")
         self.LOG("YOLO Model Loaded")
-
 
 
     def image_callback(self, msg):
@@ -58,7 +47,7 @@ class YOLONode(Node):
             class_name = class_names[classes[i]]
             if class_name == "chair":
               continue
-            color = string_to_rgb_color(class_name)
+            color = string_to_rgb(class_name)
             cv2.rectangle(original_image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
 
@@ -83,8 +72,6 @@ class YOLONode(Node):
         self.yolo_publisher.publish(yolo_msg)
 
 
-    def LOG(self, msg):
-        self.get_logger().info(str(msg))
 
 
 def main(args=None):

@@ -9,8 +9,6 @@ import cv_bridge
 
 class CalibrationNode(Node):
 
-
-
     def __init__(self):
         # Initialize the ROS node
         super().__init__('Calibration')
