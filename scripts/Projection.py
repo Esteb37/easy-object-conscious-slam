@@ -3,6 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32MultiArray
+from visualization_msgs.msg import Marker, MarkerArray
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import numpy as np
@@ -107,12 +108,16 @@ class ProjectionNode(Node):
     IMAGE_WIDTH = 640
     IMAGE_HEIGHT = 480
 
+    PLOT = False
+
     def __init__(self):
         super().__init__('Projection')
 
         self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.pose_callback, 10)
         self.yolo_subscriber = self.create_subscription(Int32MultiArray, '/yolo_boxes', self.yolo_callback, 10)
         self.lidar_subscriber = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
+
+        self.obj_pub = self.create_publisher(MarkerArray, '/objects', 1)
 
         self.extrinsic_matrix = None
         intrinsic_path = "/home/esteb37/ocslam/resource/intrinsic_matrix.npy"
@@ -138,9 +143,11 @@ class ProjectionNode(Node):
         self.camera_angle_min = min(angles)
         self.camera_angle_max = max(angles)
 
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(121)
-        self.ax2 = self.fig.add_subplot(122)
+
+        if self.PLOT:
+          self.fig = plt.figure()
+          self.ax = self.fig.add_subplot(121)
+          self.ax2 = self.fig.add_subplot(122)
 
         self.yolo_corners = []
 
@@ -150,9 +157,11 @@ class ProjectionNode(Node):
 
     def yolo_callback(self, msg):
         self.yolo_corners = []
-        self.ax2.clear()
-        self.ax2.set_xlim(0, self.IMAGE_WIDTH)
-        self.ax2.set_ylim(0, self.IMAGE_HEIGHT)
+
+        if self.PLOT:
+          self.ax2.clear()
+          self.ax2.set_xlim(0, self.IMAGE_WIDTH)
+          self.ax2.set_ylim(0, self.IMAGE_HEIGHT)
 
         for i in range(0, len(msg.data), 6):
             x1, y1, x2, y2, class_index, confidence = msg.data[i:i+6]
@@ -160,8 +169,10 @@ class ProjectionNode(Node):
             y2 = self.IMAGE_HEIGHT -  y2
 
             label = self.CLASS_NAMES[class_index]
-            color = string_to_rgb_color(label)
-            self.ax2.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color=color, label=label)
+
+            if self.PLOT:
+              color = string_to_rgb_color(label)
+              self.ax2.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color=color, label=label)
 
             top_right = self.project_point([x1, y1])
             bottom_left = self.project_point([x2, y2])
@@ -170,7 +181,8 @@ class ProjectionNode(Node):
 
             self.yolo_corners.append([top_left, bottom_left, bottom_right, top_right, label, confidence])
 
-        self.ax2.legend()
+        if self.PLOT:
+          self.ax2.legend()
 
     def pose_callback(self, msg):
         pass
@@ -182,20 +194,21 @@ class ProjectionNode(Node):
         if not self.lidar:
             return
 
-        self.ax.clear()
-        self.ax.set_xlim(0, self.MAX_RANGE*1.1)
-        self.ax.set_ylim(-self.MAX_RANGE*1.1, self.MAX_RANGE*1.1)
+        if self.PLOT:
+          self.ax.clear()
+          self.ax.set_xlim(0, self.MAX_RANGE*1.1)
+          self.ax.set_ylim(-self.MAX_RANGE*1.1, self.MAX_RANGE*1.1)
 
-        # Plot camera bound
-        self.ax.plot(x_vals(self.camera_corners),y_vals(self.camera_corners), 'r--', label="Camera view")
+          # Plot camera bound
+          self.ax.plot(x_vals(self.camera_corners),y_vals(self.camera_corners), 'r--', label="Camera view")
 
-        for box in self.yolo_corners:
-          corners = box[:4]
-          label = box[4]
-          color = string_to_rgb_color(label)
-          self.ax.plot(x_vals(corners), y_vals(corners), color=color, linestyle="-", label=label)
+          for box in self.yolo_corners:
+            corners = box[:4]
+            label = box[4]
+            color = string_to_rgb_color(label)
+            self.ax.plot(x_vals(corners), y_vals(corners), color=color, linestyle="-", label=label)
 
-        self.ax.legend()
+          self.ax.legend()
 
 
         groups = {}
@@ -213,25 +226,53 @@ class ProjectionNode(Node):
                     for box in self.yolo_corners:
                         if Polygon(box[:4]).contains(Point(x, y)):
                             label = box[4]
-                            self.ax.plot(x, y, color=string_to_rgb_color(label), marker='.')
-                            found = True
                             groups.setdefault(label, []).append((x, y, box[5]))
 
-                    if not found:
+                            if self.PLOT:
+                              self.ax.plot(x, y, color=string_to_rgb_color(label), marker='.')
+                              found = True
+
+                    if not found and self.PLOT:
                       self.ax.plot(x, y, 'r.')
 
         # create different arrays for each class
 
+        markers = MarkerArray()
+        marker_id = 0
         for label, points in groups.items():
           islands = find_islands([(x,y) for x, y, _ in points], 0.1)
           for island in islands:
             center, width, height, rotation = island
-            self.ax.add_patch(Ellipse(center, width, height, rotation, color=string_to_rgb_color(label), fill=False, linestyle="--"))
 
-        self.ax.legend()
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
-        plt.pause(0.0001)
+            # Publish the object
+            marker = Marker()
+            marker.header.frame_id = "odom"
+            marker.type = Marker.CYLINDER
+            marker.action = Marker.ADD
+            marker.scale.x = width
+            marker.scale.y = height
+            marker.scale.z = 0.5
+            marker.color.a = 1.0
+            marker.color.r, marker.color.g, marker.color.b = string_to_rgb_color(label)
+            marker.pose.position.x = center[0]
+            marker.pose.position.y = center[1]
+            marker.pose.position.z = 0.05
+            marker.pose.orientation.w = 1.0
+            marker.id = marker_id
+            marker.ns = label
+            marker_id += 1
+            markers.markers.append(marker)
+
+            if self.PLOT:
+              self.ax.add_patch(Ellipse(center, width, height, rotation, color=string_to_rgb_color(label), fill=False, linestyle="--"))
+
+        if self.PLOT:
+          self.ax.legend()
+          self.fig.canvas.draw()
+          self.fig.canvas.flush_events()
+          plt.pause(0.0001)
+
+        self.obj_pub.publish(markers)
 
 
     def project_point(self, image_point):
