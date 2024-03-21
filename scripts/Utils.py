@@ -1,7 +1,10 @@
+import rclpy
 from rclpy.node import Node
 import numpy as np
 from shapely.geometry import Point, MultiPoint, MultiPolygon, Polygon
 from shapely.ops import unary_union
+from visualization_msgs.msg import Marker
+from matplotlib.patches import Ellipse
 
 class LogNode(Node):
     def LOG(self, msg):
@@ -62,7 +65,7 @@ def project_point(image_point, intrinsic_matrix, rotation_matrix, translation_ve
         world_point = translation_vector + t * np.array([direction[0], direction[1], direction[2]])
         return world_point
 
-def find_islands(points, threshold):
+def find_largest_island(points, threshold, label):
 
   # Convert points to Shapely Point objects
   shapely_points = [Point(x, y) for x, y in points]
@@ -82,7 +85,7 @@ def find_islands(points, threshold):
   else:
     islands =  [merged_multi_point]
 
-  ellipses = []
+  largest_island = None
   for island in islands:
       # Get the minimum bounding box of the island
       min_x, min_y, max_x, max_y = island.bounds
@@ -91,14 +94,11 @@ def find_islands(points, threshold):
       width = max_x - min_x
       height = max_y - min_y
 
-      # Calculate rotation angle of the ellipse
-      # For simplicity, assume the rotation angle is 0
-      rotation = 0
+      # If the island is the largest one found so far, store it
+      if largest_island is None or width * height > largest_island.area:
+          largest_island = Object(label, Point(center_x, center_y), width, height)
 
-      # Append ellipse parameters to the list
-      ellipses.append(((center_x, center_y),width,height,rotation))
-
-  return ellipses
+  return largest_island
 
 CLASS_NAMES = [ "ball",
                 "dog",
@@ -152,3 +152,43 @@ class Projection:
             color= color  if color is not None else self.color,
             linestyle=linestyle,
             label=self.label)
+
+class Object:
+  def __init__(self, label, center, width, height):
+    self.label = label
+    self.center = center
+    self.width = width
+    self.height = height
+    self.color = string_to_rgbf(self.label)
+    self.area = width*height
+
+  def within_distance(self, other, distance):
+    return np.linalg.norm(np.array(self.center.xy) - np.array(other.center.xy)) < distance
+
+  def update_data(self, other):
+      self.center = Point((self.center.x + other.center.x)/2, (self.center.y + other.center.y)/2)
+      self.width = (self.width + other.width)/2
+      self.height = (self.height + other.height)/2
+
+  def as_marker(self, marker_id):
+      # Publish the object
+      marker = Marker()
+      marker.header.frame_id = "odom"
+      marker.type = Marker.CYLINDER
+      marker.action = Marker.ADD
+      marker.scale.x = self.width
+      marker.scale.y = self.height
+      marker.scale.z = 0.5
+      marker.color.a = 1.0
+      marker.color.r, marker.color.g, marker.color.b = self.color
+      marker.pose.position.x = self.center.x
+      marker.pose.position.y = self.center.y
+      marker.pose.position.z = 0.05
+      marker.pose.orientation.w = 1.0
+      marker.id = marker_id
+      marker.ns = self.label
+      marker.lifetime = rclpy.duration.Duration(seconds=0.01).to_msg()
+      return marker
+
+  def as_ellipse(self):
+    return Ellipse(self.center, self.width, self.height, 0, color=self.color, fill=False, linestyle="--")

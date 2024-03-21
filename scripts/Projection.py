@@ -3,12 +3,11 @@
 import rclpy
 from Utils import *
 from std_msgs.msg import Int32MultiArray
-from visualization_msgs.msg import Marker, MarkerArray
+from visualization_msgs.msg import MarkerArray
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 import time
 
 class ProjectionNode(LogNode):
@@ -21,6 +20,9 @@ class ProjectionNode(LogNode):
 
     PLOT = False
 
+    TRACKING_THRESHOLD = 0.1
+    ISLAND_THRESHOLD = 0.1
+
     def __init__(self):
         super().__init__('Projection')
 
@@ -32,8 +34,6 @@ class ProjectionNode(LogNode):
 
         self.intrinsic_path = "/home/esteb37/ocslam/resource/intrinsic_matrix.npy"
         self.intrinsic_matrix = np.load(self.intrinsic_path)
-
-
 
         self.rotation_matrix = np.identity(3)
         self.translation_vector = np.array([0, 0, self.CAM_HEIGHT])
@@ -66,6 +66,8 @@ class ProjectionNode(LogNode):
         self.lidar = []
         self.angle_min = 0
         self.angle_increment = 0
+
+        self.objects = []
 
     def yolo_callback(self, msg):
 
@@ -156,36 +158,29 @@ class ProjectionNode(LogNode):
         if not groups:
             return
 
+        for label, points in groups.items():
+
+          new_object = find_largest_island([(x,y) for x, y, _ in points], self.ISLAND_THRESHOLD, label)
+
+          if new_object is not None:
+            tracked = False
+
+            for obj in self.objects:
+                if new_object.label == obj.label and new_object.within_distance(obj, self.TRACKING_THRESHOLD):
+                    obj.update_data(new_object)
+                    tracked = True
+
+            if not tracked:
+              self.objects.append(new_object)
+
         markers = MarkerArray()
         marker_id = 0
-        for label, points in groups.items():
-          islands = find_islands([(x,y) for x, y, _ in points], 0.1)
-          for island in islands:
-            center, width, height, rotation = island
-
-            # Publish the object
-            marker = Marker()
-            marker.header.frame_id = "odom"
-            marker.type = Marker.CYLINDER
-            marker.action = Marker.ADD
-            marker.scale.x = width
-            marker.scale.y = height
-            marker.scale.z = 0.5
-            marker.color.a = 1.0
-            marker.color.r, marker.color.g, marker.color.b = string_to_rgbf(label)
-            marker.pose.position.x = center[0]
-            marker.pose.position.y = center[1]
-            marker.pose.position.z = 0.05
-            marker.pose.orientation.w = 1.0
-            marker.id = marker_id
-            marker.ns = label
-            marker_id += 1
-            marker.lifetime = rclpy.duration.Duration(seconds=0.01).to_msg()
-
-            markers.markers.append(marker)
+        for obj in self.objects:
+            markers.markers.append(obj.as_marker(marker_id))
+            marker_id+=1
 
             if self.PLOT:
-              self.ax.add_patch(Ellipse(center, width, height, rotation, color=string_to_rgbf(label), fill=False, linestyle="--"))
+              self.ax.add_patch(obj.as_ellipse())
 
         if self.PLOT:
           self.ax.legend()
