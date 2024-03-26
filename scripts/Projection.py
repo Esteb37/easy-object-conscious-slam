@@ -12,7 +12,8 @@ import time
 
 class ProjectionNode(LogNode):
 
-    CAM_HEIGHT = 0.18
+    CAM_HEIGHT = 0.20
+    LIDAR_HEIGHT = 0.16
     MAX_RANGE = 4
 
     IMAGE_WIDTH = 640
@@ -35,8 +36,11 @@ class ProjectionNode(LogNode):
         self.intrinsic_path = "/home/esteb37/ocslam/resource/intrinsic_matrix.npy"
         self.intrinsic_matrix = np.load(self.intrinsic_path)
 
+        self.CAM_LIDAR_DIST = self.CAM_HEIGHT - self.LIDAR_HEIGHT
+
         self.rotation_matrix = np.identity(3)
-        self.translation_vector = np.array([0, 0, self.CAM_HEIGHT])
+        self.translation_vector = np.zeros(3)
+
 
         self.camera_projection = Projection([
                                   (0, 0),
@@ -44,8 +48,7 @@ class ProjectionNode(LogNode):
                                   (self.IMAGE_WIDTH, self.IMAGE_HEIGHT),
                                   (0, self.IMAGE_HEIGHT)],
                                   self.intrinsic_matrix,
-                                  self.rotation_matrix,
-                                  self.translation_vector,
+                                  self.CAM_LIDAR_DIST,
                                   "Camera View",
                                   )
 
@@ -95,18 +98,16 @@ class ProjectionNode(LogNode):
                                           (x2, y1), # Bottom Right
                                           (x1, y1)], # Top Right
                                           self.intrinsic_matrix,
-                                          self.rotation_matrix,
-                                          self.translation_vector,
+                                          self.CAM_LIDAR_DIST,
                                           label, confidence,
                                         ))
 
-        if self.PLOT:
-          self.ax2.legend()
-
-        self.classify_markers()
+        self.find_objects()
+        self.publish_markers()
 
     def pose_callback(self, msg):
-        pass
+        self.rotation_matrix, self.translation_vector = pose_msg_to_numpy(msg.pose.pose)
+
 
     def lidar_callback(self, msg):
         self.lidar = msg.ranges
@@ -114,23 +115,21 @@ class ProjectionNode(LogNode):
         self.angle_increment = msg.angle_increment
 
 
-    def classify_markers(self):
-        # if none or empty return
+    def find_objects(self):
+
         if not self.lidar:
             return
 
         if self.PLOT:
           self.ax.clear()
-          self.ax.set_xlim(0, self.MAX_RANGE*1.1)
-          self.ax.set_ylim(-self.MAX_RANGE*1.1, self.MAX_RANGE*1.1)
+          self.ax.set_xlim(0, self.MAX_RANGE * 1.1)
+          self.ax.set_ylim(-self.MAX_RANGE * 1.1, self.MAX_RANGE * 1.1)
 
           # Plot camera bound
           self.camera_projection.plot(self.ax, "--","red")
 
           for projection in self.yolo_projections:
             projection.plot(self.ax, "-")
-
-          self.ax.legend()
 
         groups = {}
 
@@ -155,24 +154,24 @@ class ProjectionNode(LogNode):
                     if self.PLOT and not found:
                       self.ax.plot(x, y, 'r.')
 
-        if not groups:
-            return
-
         for label, points in groups.items():
 
           new_object = find_largest_island([(x,y) for x, y, _ in points], self.ISLAND_THRESHOLD, label)
+
+          new_object.transform(self.rotation_matrix, self.translation_vector)
 
           if new_object is not None:
             tracked = False
 
             for obj in self.objects:
-                if new_object.label == obj.label and new_object.within_distance(obj, self.TRACKING_THRESHOLD):
+                if new_object.label == obj.label and new_object.collides(obj):
                     obj.update_data(new_object)
                     tracked = True
 
             if not tracked:
               self.objects.append(new_object)
 
+    def publish_markers(self):
         markers = MarkerArray()
         marker_id = 0
         for obj in self.objects:
@@ -184,6 +183,9 @@ class ProjectionNode(LogNode):
 
         if self.PLOT:
           self.ax.legend()
+
+          if self.yolo_projections:
+            self.ax2.legend()
           self.fig.canvas.draw()
           self.fig.canvas.flush_events()
           plt.pause(0.0001)

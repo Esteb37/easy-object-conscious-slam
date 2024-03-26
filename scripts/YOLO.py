@@ -13,7 +13,7 @@ class YOLONode(LogNode):
 
     WIDTH = 224
     HEIGHT = 168
-    CONFIDENCE_THRESHOLD = 0.2
+    CONFIDENCE_THRESHOLD = 0.4
 
     def __init__(self):
         # Initialize the ROS node

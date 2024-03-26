@@ -5,6 +5,10 @@ from shapely.geometry import Point, MultiPoint, MultiPolygon, Polygon
 from shapely.ops import unary_union
 from visualization_msgs.msg import Marker
 from matplotlib.patches import Ellipse
+import hashlib
+
+def deterministic_hash(string):
+    return hashlib.sha256(string.encode()).hexdigest()
 
 class LogNode(Node):
     def LOG(self, msg):
@@ -12,14 +16,14 @@ class LogNode(Node):
 
 def string_to_rgb(string):
     # Compute the hash value of the string
-    hash_value = hash(string)
+    hash_value = deterministic_hash(string)
 
     # Extract the RGB components from the hash value
-    red = (hash_value & 0xFF0000) >> 16
-    green = (hash_value & 0x00FF00) >> 8
-    blue = hash_value & 0x0000FF
+    r = int(hash_value[0:2], 16)
+    g = int(hash_value[2:4], 16)
+    b = int(hash_value[4:6], 16)
 
-    return (blue, green, red)
+    return [r, g, b]
 
 def string_to_rgbf(string):
   return  [float(val / 255) for val in string_to_rgb(string)]
@@ -115,14 +119,14 @@ CLASS_NAMES = [ "ball",
 class Projection:
   def __init__(self, array,
                intrinsic_matrix,
-               rotation_matrix,
-               translation_vector,
-               label, confidence = 100.0):
+               height,
+               label,
+               confidence = 100.0):
 
     self.array = [project_point(corner,
-                                    intrinsic_matrix,
-                                    rotation_matrix,
-                                    translation_vector)
+                                intrinsic_matrix,
+                                np.identity(3),
+                                np.array([0, 0, height]))
                   for corner in array]
 
     self.top_left = self.array[0]
@@ -154,6 +158,9 @@ class Projection:
             label=self.label)
 
 class Object:
+
+  UPDATE_WEIGHT = 0.9
+
   def __init__(self, label, center, width, height):
     self.label = label
     self.center = center
@@ -162,13 +169,26 @@ class Object:
     self.color = string_to_rgbf(self.label)
     self.area = width*height
 
-  def within_distance(self, other, distance):
-    return np.linalg.norm(np.array(self.center.xy) - np.array(other.center.xy)) < distance
+  def distance(self, other):
+    return np.linalg.norm(np.array(self.center.xy) - np.array(other.center.xy))
+
+
+  def collides(self, other):
+    distance = self.distance(other)
+    return distance < (self.width + other.width) / 2 or distance < (self.height + other.height) / 2
 
   def update_data(self, other):
-      self.center = Point((self.center.x + other.center.x)/2, (self.center.y + other.center.y)/2)
-      self.width = (self.width + other.width)/2
-      self.height = (self.height + other.height)/2
+      uw = self.UPDATE_WEIGHT
+      uwc = 1 - uw
+      self.center = Point(
+        (self.center.x  * uw +
+         other.center.x * uwc),
+        (self.center.y  * uw +
+         other.center.y * uwc)
+        )
+
+      self.width = max(self.width, other.width)
+      self.height = max(self.height, other.height)
 
   def as_marker(self, marker_id):
       # Publish the object
@@ -191,4 +211,7 @@ class Object:
       return marker
 
   def as_ellipse(self):
-    return Ellipse(self.center, self.width, self.height, 0, color=self.color, fill=False, linestyle="--")
+    return Ellipse(self.center.xy, self.width, self.height, 0, color=self.color, fill=False, linestyle="--")
+
+  def transform(self, rotation_matrix, translation_vector):
+    self.center = Point(np.dot(rotation_matrix, [self.center.x, self.center.y, 0]) + translation_vector)
