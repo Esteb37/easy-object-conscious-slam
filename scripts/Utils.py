@@ -6,6 +6,7 @@ from shapely.ops import unary_union
 from visualization_msgs.msg import Marker
 from matplotlib.patches import Ellipse
 import hashlib
+import math
 
 def deterministic_hash(string):
     return hashlib.sha256(string.encode()).hexdigest()
@@ -69,41 +70,6 @@ def project_point(image_point, intrinsic_matrix, rotation_matrix, translation_ve
         world_point = translation_vector + t * np.array([direction[0], direction[1], direction[2]])
         return world_point
 
-def find_largest_island(points, threshold, label):
-
-  # Convert points to Shapely Point objects
-  shapely_points = [Point(x, y) for x, y in points]
-
-  # Create MultiPoint from the list of Shapely Point objects
-  multi_point = MultiPoint(shapely_points)
-
-  # Buffer the MultiPoint to form circles around each point
-  buffered_multi_point = multi_point.buffer(threshold)
-
-  # Merge overlapping circles to form continuous regions
-  merged_multi_point = unary_union(buffered_multi_point)
-
-  # Extract the individual polygons representing connected regions
-  if isinstance(merged_multi_point, MultiPolygon):
-     islands = list(merged_multi_point.geoms)
-  else:
-    islands =  [merged_multi_point]
-
-  largest_island = None
-  for island in islands:
-      # Get the minimum bounding box of the island
-      min_x, min_y, max_x, max_y = island.bounds
-      center_x = (min_x + max_x) / 2
-      center_y = (min_y + max_y) / 2
-      width = max_x - min_x
-      height = max_y - min_y
-
-      # If the island is the largest one found so far, store it
-      if largest_island is None or width * height > largest_island.area:
-          largest_island = Object(label, Point(center_x, center_y), width, height)
-
-  return largest_island
-
 CLASS_NAMES = [ "ball",
                 "dog",
                 "gnome",
@@ -115,6 +81,14 @@ CLASS_NAMES = [ "ball",
                 "extinguisher",
                 "flowers",
                 "shelf"]
+
+def distance_to_line(line, point):
+    # Calculate the distance from point to the line defined by start and end
+    x1, y1 = line[0]
+    x2, y2 = line[1]
+    x0, y0 = point
+    return abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) / math.sqrt((y2-y1)**2 + (x2-x1)**2)
+
 
 class Projection:
   def __init__(self, array,
@@ -134,12 +108,18 @@ class Projection:
     self.bottom_right = self.array[2]
     self.top_right = self.array[3]
 
+
+    self.center_line = ((self.top_left[0], (self.top_left[1] + self.bottom_left[1]) / 2),
+                        (self.top_right[0], (self.top_right[1] + self.bottom_right[1]) / 2))
+
     self.label = label
     self.confidence = confidence
 
     self.color = string_to_rgbf(label)
 
     self.polygon = Polygon(self.array)
+
+    self.lidar_points = []
 
   def x_perim(self):
     return [point[0] for point in self.array] + [self.array[0][0]]
@@ -156,6 +136,55 @@ class Projection:
             color= color  if color is not None else self.color,
             linestyle=linestyle,
             label=self.label)
+
+    ax.plot(*zip(*self.center_line), color= color  if color is not None else self.color, linestyle=":")
+
+  def add_lidar_point(self, x, y):
+    self.lidar_points.append((x,y))
+
+  def find_object(self, threshold):
+
+    if not self.lidar_points:
+      return None
+
+    # Convert points to Shapely Point objects
+    shapely_points = [Point(x, y) for x, y in self.lidar_points]
+
+    # Create MultiPoint from the list of Shapely Point objects
+    multi_point = MultiPoint(shapely_points)
+
+    # Buffer the MultiPoint to form circles around each point
+    buffered_multi_point = multi_point.buffer(threshold)
+
+    # Merge overlapping circles to form continuous regions
+    merged_multi_point = unary_union(buffered_multi_point)
+
+    # Extract the individual polygons representing connected regions
+    if isinstance(merged_multi_point, MultiPolygon):
+      islands = list(merged_multi_point.geoms)
+    else:
+      islands =  [merged_multi_point]
+
+    centermost_island = None
+    min_distance = float('inf')
+    for island in islands:
+        # Get the minimum bounding box of the island
+        min_x, min_y, max_x, max_y = island.bounds
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+        width = max_x - min_x
+        height = max_y - min_y
+
+        dist_to_line = distance_to_line(self.center_line, (center_x, center_y))
+
+        if centermost_island is None:
+            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
+            min_distance = dist_to_line
+        elif dist_to_line < min_distance:
+            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
+            min_distance = dist_to_line
+
+    return centermost_island
 
 class Object:
 
@@ -190,8 +219,7 @@ class Object:
       self.width = max(self.width, other.width)
       self.height = max(self.height, other.height)
 
-  def as_marker(self, marker_id):
-      # Publish the object
+  def as_marker(self, marker_id, lifetime):
       marker = Marker()
       marker.header.frame_id = "odom"
       marker.type = Marker.CYLINDER
@@ -207,8 +235,26 @@ class Object:
       marker.pose.orientation.w = 1.0
       marker.id = marker_id
       marker.ns = self.label
-      marker.lifetime = rclpy.duration.Duration(seconds=0.01).to_msg()
+      marker.lifetime = rclpy.duration.Duration(seconds=lifetime).to_msg()
       return marker
+
+  def as_marker_label(self, marker_id, lifetime):
+      text = Marker()
+      text.header.frame_id = "odom"
+      text.type = Marker.TEXT_VIEW_FACING
+      text.action = Marker.ADD
+      text.scale.z = 0.1
+      text.color.a = 1.0
+      text.color.r, text.color.g, text.color.b = self.color
+      text.pose.position.x = self.center.x
+      text.pose.position.y = self.center.y
+      text.pose.position.z = 0.5
+      text.pose.orientation.w = 1.0
+      text.text = self.label
+      text.id = marker_id * 1000
+      text.ns = self.label
+      text.lifetime = rclpy.duration.Duration(seconds=lifetime).to_msg()
+      return text
 
   def as_ellipse(self):
     return Ellipse(self.center.xy, self.width, self.height, 0, color=self.color, fill=False, linestyle="--")

@@ -47,7 +47,8 @@ class YOLONode(LogNode):
             class_name = class_names[classes[i]]
             if class_name == "chair":
               continue
-            color = string_to_rgb(class_name)
+            r,g,b = string_to_rgb(class_name)
+            color = (b, g, r)
             cv2.rectangle(original_image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
 
 

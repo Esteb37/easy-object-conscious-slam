@@ -16,13 +16,13 @@ class ProjectionNode(LogNode):
     LIDAR_HEIGHT = 0.16
     MAX_RANGE = 4
 
-    IMAGE_WIDTH = 640
-    IMAGE_HEIGHT = 480
+    IMAGE_WIDTH = 640 * 1.05
+    IMAGE_HEIGHT = 481 * 1.05
 
-    PLOT = False
+    PLOT = True
 
     TRACKING_THRESHOLD = 0.1
-    ISLAND_THRESHOLD = 0.1
+    ISLAND_THRESHOLD = 0.075
 
     def __init__(self):
         super().__init__('Projection')
@@ -72,6 +72,8 @@ class ProjectionNode(LogNode):
 
         self.objects = []
 
+        self.time = time.time()
+
     def yolo_callback(self, msg):
 
         self.yolo_projections = []
@@ -85,6 +87,7 @@ class ProjectionNode(LogNode):
             x1, y1, x2, y2, class_index, confidence = msg.data[i:i+6]
             y1 = self.IMAGE_HEIGHT - y1
             y2 = self.IMAGE_HEIGHT -  y2
+            x2*=1.05
 
             label = CLASS_NAMES[class_index]
 
@@ -131,8 +134,6 @@ class ProjectionNode(LogNode):
           for projection in self.yolo_projections:
             projection.plot(self.ax, "-")
 
-        groups = {}
-
         for point in self.lidar:
             if point != float('inf'):
                 # get the angle of the point
@@ -145,7 +146,7 @@ class ProjectionNode(LogNode):
                     found = False
                     for projection in self.yolo_projections:
                         if projection.contains(x, y):
-                            groups.setdefault(projection.label, []).append((x, y, projection.confidence))
+                            projection.add_lidar_point(x, y)
 
                             if self.PLOT:
                               self.ax.plot(x, y, color=projection.color, marker='.')
@@ -154,13 +155,16 @@ class ProjectionNode(LogNode):
                     if self.PLOT and not found:
                       self.ax.plot(x, y, 'r.')
 
-        for label, points in groups.items():
+        for projection in self.yolo_projections:
 
-          new_object = find_largest_island([(x,y) for x, y, _ in points], self.ISLAND_THRESHOLD, label)
+          new_object = projection.find_object(self.ISLAND_THRESHOLD)
 
-          new_object.transform(self.rotation_matrix, self.translation_vector)
+          if new_object:
+            if self.PLOT:
+              self.ax.add_patch(new_object.as_ellipse())
 
-          if new_object is not None:
+            new_object.transform(self.rotation_matrix, self.translation_vector)
+
             tracked = False
 
             for obj in self.objects:
@@ -174,12 +178,14 @@ class ProjectionNode(LogNode):
     def publish_markers(self):
         markers = MarkerArray()
         marker_id = 0
-        for obj in self.objects:
-            markers.markers.append(obj.as_marker(marker_id))
-            marker_id+=1
 
-            if self.PLOT:
-              self.ax.add_patch(obj.as_ellipse())
+        lifetime = (time.time() -  self.time)
+        self.time = time.time()
+
+        for obj in self.objects:
+            markers.markers.append(obj.as_marker(marker_id, lifetime))
+            markers.markers.append(obj.as_marker_label(marker_id, lifetime))
+            marker_id+=1
 
         if self.PLOT:
           self.ax.legend()
