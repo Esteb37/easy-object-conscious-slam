@@ -1,12 +1,21 @@
-import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from shapely.ops import unary_union
-from visualization_msgs.msg import Marker
-from matplotlib.patches import Ellipse
 import hashlib
 import math
+
+CLASS_NAMES = [ "ball",
+                "dog",
+                "gnome",
+                "table",
+                "chair",
+                "door",
+                "duck",
+                "person",
+                "extinguisher",
+                "flowers",
+                "shelf"]
+
 
 def deterministic_hash(string):
     return hashlib.sha256(string.encode()).hexdigest()
@@ -69,18 +78,6 @@ def project_point(image_point, intrinsic_matrix, rotation_matrix, translation_ve
         t = -translation_vector[2] / direction[2]
         world_point = translation_vector + t * np.array([direction[0], direction[1], direction[2]])
         return world_point
-
-CLASS_NAMES = [ "ball",
-                "dog",
-                "gnome",
-                "table",
-                "chair",
-                "door",
-                "duck",
-                "person",
-                "extinguisher",
-                "flowers",
-                "shelf"]
 
 def distance_to_line(line, point):
     # Calculate the distance from point to the line defined by start and end

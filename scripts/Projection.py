@@ -1,5 +1,5 @@
 from shapely.geometry import Point, MultiPoint, MultiPolygon, Polygon
-
+from shapely.ops import unary_union
 from Utils import *
 from Object import *
 
@@ -80,8 +80,8 @@ class Projection:
 
     centermost_island = None
     min_distance = float('inf')
+
     for island in islands:
-        # Get the minimum bounding box of the island
         min_x, min_y, max_x, max_y = island.bounds
         center_x = (min_x + max_x) / 2
         center_y = (min_y + max_y) / 2
@@ -90,10 +90,7 @@ class Projection:
 
         dist_to_line = distance_to_line(self.center_line, (center_x, center_y))
 
-        if centermost_island is None:
-            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
-            min_distance = dist_to_line
-        elif dist_to_line < min_distance:
+        if centermost_island is None or dist_to_line < min_distance:
             centermost_island = Object(self.label, Point(center_x, center_y), width, height)
             min_distance = dist_to_line
 
