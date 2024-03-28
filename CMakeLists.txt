@@ -96,6 +96,8 @@ include_directories(
 install(PROGRAMS
   scripts/YOLO.py
   scripts/Utils.py
+  scripts/Consciousness.py
+  scripts/Object.py
   scripts/Projection.py
   DESTINATION lib/${PROJECT_NAME}
 )

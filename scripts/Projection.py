@@ -1,210 +1,100 @@
-#!/usr/bin/env python3
+from shapely.geometry import Point, MultiPoint, MultiPolygon, Polygon
 
-import rclpy
 from Utils import *
-from std_msgs.msg import Int32MultiArray
-from visualization_msgs.msg import MarkerArray
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import LaserScan
-import numpy as np
-import matplotlib.pyplot as plt
-import time
+from Object import *
 
-class ProjectionNode(LogNode):
+class Projection:
+  def __init__(self, array,
+               intrinsic_matrix,
+               height,
+               label,
+               confidence = 100.0):
 
-    CAM_HEIGHT = 0.20
-    LIDAR_HEIGHT = 0.16
-    MAX_RANGE = 4
+    self.array = [project_point(corner,
+                                intrinsic_matrix,
+                                np.identity(3),
+                                np.array([0, 0, height]))
+                  for corner in array]
 
-    IMAGE_WIDTH = 640 * 1.05
-    IMAGE_HEIGHT = 481 * 1.05
-
-    PLOT = True
-
-    TRACKING_THRESHOLD = 0.1
-    ISLAND_THRESHOLD = 0.075
-
-    def __init__(self):
-        super().__init__('Projection')
-
-        self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.pose_callback, 10)
-        self.yolo_subscriber = self.create_subscription(Int32MultiArray, '/yolo_boxes', self.yolo_callback, 10)
-        self.lidar_subscriber = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
-
-        self.obj_pub = self.create_publisher(MarkerArray, '/objects', 1)
-
-        self.intrinsic_path = "/home/esteb37/ocslam/resource/intrinsic_matrix.npy"
-        self.intrinsic_matrix = np.load(self.intrinsic_path)
-
-        self.CAM_LIDAR_DIST = self.CAM_HEIGHT - self.LIDAR_HEIGHT
-
-        self.rotation_matrix = np.identity(3)
-        self.translation_vector = np.zeros(3)
+    self.top_left = self.array[0]
+    self.bottom_left = self.array[1]
+    self.bottom_right = self.array[2]
+    self.top_right = self.array[3]
 
 
-        self.camera_projection = Projection([
-                                  (0, 0),
-                                  (self.IMAGE_WIDTH, 0),
-                                  (self.IMAGE_WIDTH, self.IMAGE_HEIGHT),
-                                  (0, self.IMAGE_HEIGHT)],
-                                  self.intrinsic_matrix,
-                                  self.CAM_LIDAR_DIST,
-                                  "Camera View",
-                                  )
+    self.center_line = ((self.top_left[0], (self.top_left[1] + self.bottom_left[1]) / 2),
+                        (self.top_right[0], (self.top_right[1] + self.bottom_right[1]) / 2))
 
+    self.label = label
+    self.confidence = confidence
 
-        angles = [np.arctan2(coord[1], coord[0]) for coord in self.camera_projection.array]
+    self.color = string_to_rgbf(label)
 
-        # get angle range
-        self.camera_angle_min = min(angles)
-        self.camera_angle_max = max(angles)
+    self.polygon = Polygon(self.array)
 
-        if self.PLOT:
-          self.fig = plt.figure()
-          self.ax = self.fig.add_subplot(121)
-          self.ax2 = self.fig.add_subplot(122)
+    self.lidar_points = []
 
-        self.yolo_projections = []
+  def x_perim(self):
+    return [point[0] for point in self.array] + [self.array[0][0]]
 
-        self.lidar = []
-        self.angle_min = 0
-        self.angle_increment = 0
+  def y_perim(self):
+    return [point[1] for point in self.array] + [self.array[0][1]]
 
-        self.objects = []
+  def contains(self, x, y):
+    return self.polygon.contains(Point(x, y))
 
-        self.time = time.time()
+  def plot(self, ax, linestyle, color = None):
+    ax.plot(self.x_perim(),
+            self.y_perim(),
+            color= color  if color is not None else self.color,
+            linestyle=linestyle,
+            label=self.label)
 
-    def yolo_callback(self, msg):
+    ax.plot(*zip(*self.center_line), color= color  if color is not None else self.color, linestyle=":")
 
-        self.yolo_projections = []
+  def add_lidar_point(self, x, y):
+    self.lidar_points.append((x,y))
 
-        if self.PLOT:
-          self.ax2.clear()
-          self.ax2.set_xlim(0, self.IMAGE_WIDTH)
-          self.ax2.set_ylim(0, self.IMAGE_HEIGHT)
+  def find_object(self, threshold):
 
-        for i in range(0, len(msg.data), 6):
-            x1, y1, x2, y2, class_index, confidence = msg.data[i:i+6]
-            y1 = self.IMAGE_HEIGHT - y1
-            y2 = self.IMAGE_HEIGHT -  y2
-            x2*=1.05
+    if not self.lidar_points:
+      return None
 
-            label = CLASS_NAMES[class_index]
+    # Convert points to Shapely Point objects
+    shapely_points = [Point(x, y) for x, y in self.lidar_points]
 
-            if self.PLOT:
-              color = string_to_rgbf(label)
-              self.ax2.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color=color, label=label)
+    # Create MultiPoint from the list of Shapely Point objects
+    multi_point = MultiPoint(shapely_points)
 
-            self.yolo_projections.append(Projection(
-                                          [(x1, y2), # Top Left
-                                          (x2, y2), # Bottom Left
-                                          (x2, y1), # Bottom Right
-                                          (x1, y1)], # Top Right
-                                          self.intrinsic_matrix,
-                                          self.CAM_LIDAR_DIST,
-                                          label, confidence,
-                                        ))
+    # Buffer the MultiPoint to form circles around each point
+    buffered_multi_point = multi_point.buffer(threshold)
 
-        self.find_objects()
-        self.publish_markers()
+    # Merge overlapping circles to form continuous regions
+    merged_multi_point = unary_union(buffered_multi_point)
 
-    def pose_callback(self, msg):
-        self.rotation_matrix, self.translation_vector = pose_msg_to_numpy(msg.pose.pose)
+    # Extract the individual polygons representing connected regions
+    if isinstance(merged_multi_point, MultiPolygon):
+      islands = list(merged_multi_point.geoms)
+    else:
+      islands =  [merged_multi_point]
 
+    centermost_island = None
+    min_distance = float('inf')
+    for island in islands:
+        # Get the minimum bounding box of the island
+        min_x, min_y, max_x, max_y = island.bounds
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+        width = max_x - min_x
+        height = max_y - min_y
 
-    def lidar_callback(self, msg):
-        self.lidar = msg.ranges
-        self.angle_min = msg.angle_min
-        self.angle_increment = msg.angle_increment
+        dist_to_line = distance_to_line(self.center_line, (center_x, center_y))
 
+        if centermost_island is None:
+            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
+            min_distance = dist_to_line
+        elif dist_to_line < min_distance:
+            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
+            min_distance = dist_to_line
 
-    def find_objects(self):
-
-        if not self.lidar:
-            return
-
-        if self.PLOT:
-          self.ax.clear()
-          self.ax.set_xlim(0, self.MAX_RANGE * 1.1)
-          self.ax.set_ylim(-self.MAX_RANGE * 1.1, self.MAX_RANGE * 1.1)
-
-          # Plot camera bound
-          self.camera_projection.plot(self.ax, "--","red")
-
-          for projection in self.yolo_projections:
-            projection.plot(self.ax, "-")
-
-        for point in self.lidar:
-            if point != float('inf'):
-                # get the angle of the point
-                angle = self.angle_min + self.angle_increment * self.lidar.index(point)
-                # get the x and y coordinates of the point
-                x = point * np.cos(angle)
-                y = point * np.sin(angle)
-
-                if angle > self.camera_angle_min and angle < self.camera_angle_max:
-                    found = False
-                    for projection in self.yolo_projections:
-                        if projection.contains(x, y):
-                            projection.add_lidar_point(x, y)
-
-                            if self.PLOT:
-                              self.ax.plot(x, y, color=projection.color, marker='.')
-                              found = True
-
-                    if self.PLOT and not found:
-                      self.ax.plot(x, y, 'r.')
-
-        for projection in self.yolo_projections:
-
-          new_object = projection.find_object(self.ISLAND_THRESHOLD)
-
-          if new_object:
-            if self.PLOT:
-              self.ax.add_patch(new_object.as_ellipse())
-
-            new_object.transform(self.rotation_matrix, self.translation_vector)
-
-            tracked = False
-
-            for obj in self.objects:
-                if new_object.label == obj.label and new_object.collides(obj):
-                    obj.update_data(new_object)
-                    tracked = True
-
-            if not tracked:
-              self.objects.append(new_object)
-
-    def publish_markers(self):
-        markers = MarkerArray()
-        marker_id = 0
-
-        lifetime = (time.time() -  self.time)
-        self.time = time.time()
-
-        for obj in self.objects:
-            markers.markers.append(obj.as_marker(marker_id, lifetime))
-            markers.markers.append(obj.as_marker_label(marker_id, lifetime))
-            marker_id+=1
-
-        if self.PLOT:
-          self.ax.legend()
-
-          if self.yolo_projections:
-            self.ax2.legend()
-          self.fig.canvas.draw()
-          self.fig.canvas.flush_events()
-          plt.pause(0.0001)
-
-        self.obj_pub.publish(markers)
-
-def main(args=None):
-    rclpy.init(args=args)
-    projection_node = ProjectionNode()
-    rclpy.spin(projection_node)
-    projection_node.destroy_node()
-
-
-if __name__ == '__main__':
-    # Runs a listener node when this script is run directly (not through an entrypoint)
-    main()
+    return centermost_island

@@ -57,9 +57,9 @@ def generate_launch_description():
         executable='YOLO.py'
     )
 
-    projection_node = Node(
+    consciousness_node = Node(
         package='ocslam',
-        executable='Projection.py'
+        executable='Consciousness.py'
     )
 
     return LaunchDescription([
@@ -71,5 +71,5 @@ def generate_launch_description():
                                             description='Absolute path to rviz config file'),
         joint_state_publisher_node,
         robot_state_publisher_node,
-        ocslam_driver, projection_node,
+        ocslam_driver, consciousness_node,
         yolo_node, main, rviz_node])
