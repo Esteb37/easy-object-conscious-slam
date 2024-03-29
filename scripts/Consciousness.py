@@ -24,8 +24,8 @@ class Conciousness(LogNode):
 
     PLOT = True
 
-    TRACKING_THRESHOLD = 0.1
-    PRESENCE_TRESHOLD = 0.0
+    TRACKING_THRESHOLD = 0.3
+    PRESENCE_TRESHOLD = 0.8
 
     def __init__(self):
         super().__init__('Consciousness')
@@ -161,17 +161,28 @@ class Conciousness(LogNode):
                 y = point * np.sin(angle)
 
                 if angle > self.camera_angle_min and angle < self.camera_angle_max:
-                    found = False
+
+                    closest_projection = None
+                    closest_distance = float('inf')
                     for projection in self.yolo_projections:
                         if projection.contains(x, y):
-                            projection.add_lidar_point(x, y)
+                            projection_center = projection.center_line[0]
+                            camera_center = self.camera_projection.center_line[0]
+                            distance = np.linalg.norm(np.array(projection_center) - np.array(camera_center))
 
-                            if self.PLOT:
-                              self.ax.plot(x, y, color=projection.color, marker='.')
-                              found = True
+                            if closest_projection is None or distance < closest_distance:
+                                closest_projection = projection
+                                closest_distance = distance
 
-                    if self.PLOT and not found:
-                      self.ax.plot(x, y, 'r.')
+                    if closest_projection is not None:
+                      closest_projection.add_lidar_point(x, y)
+
+                      if self.PLOT:
+                        self.ax.plot(x, y, color=closest_projection.color, marker='.')
+
+                    elif self.PLOT:
+                        self.ax.plot(x, y, 'r.')
+
 
         for projection in self.yolo_projections:
 

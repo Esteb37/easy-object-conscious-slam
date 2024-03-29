@@ -45,7 +45,7 @@ class YOLONode(LogNode):
         for i, box in enumerate(positions):
             x1, y1, x2, y2 = box
             class_name = class_names[classes[i]]
-            if class_name == "chair":
+            if class_name == "duck":
               continue
             r,g,b = string_to_rgb(class_name)
             color = (b, g, r)
