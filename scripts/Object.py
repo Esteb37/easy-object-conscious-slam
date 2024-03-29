@@ -5,17 +5,23 @@ from visualization_msgs.msg import Marker
 from matplotlib.patches import Ellipse
 import rclpy
 
+
 class Object:
 
   UPDATE_WEIGHT = 0.9
+  FRAME_CONFIDENCE = 5
 
-  def __init__(self, label, center, width, height):
-    self.label = label
+
+  def __init__(self, center, width, height, projection):
     self.center = center
     self.width = width
     self.height = height
-    self.color = string_to_rgbf(self.label)
+    self.color = projection.color
+    self.label = projection.label
+    self.presence_confidence = projection.confidence / self.FRAME_CONFIDENCE
+    self.detection_confidence = projection.confidence
     self.area = width*height
+    self.frame_presence = 1
 
   def distance(self, other):
     return np.linalg.norm(np.array(self.center.xy) - np.array(other.center.xy))
@@ -38,6 +44,13 @@ class Object:
       self.width = max(self.width, other.width)
       self.height = max(self.height, other.height)
 
+      if self.frame_presence < self.FRAME_CONFIDENCE:
+        self.frame_presence += 1
+
+      self.presence_confidence = max(self.presence_confidence, other.detection_confidence * self.frame_presence / self.FRAME_CONFIDENCE)
+
+
+
   def as_marker(self, marker_id, lifetime):
       marker = Marker()
       marker.header.frame_id = "odom"
@@ -46,7 +59,7 @@ class Object:
       marker.scale.x = self.width
       marker.scale.y = self.height
       marker.scale.z = 0.5
-      marker.color.a = 1.0
+      marker.color.a = self.presence_confidence
       marker.color.r, marker.color.g, marker.color.b = self.color
       marker.pose.position.x = self.center.x
       marker.pose.position.y = self.center.y
@@ -69,7 +82,7 @@ class Object:
       text.pose.position.y = self.center.y
       text.pose.position.z = 0.5
       text.pose.orientation.w = 1.0
-      text.text = self.label
+      text.text = self.label + "," + str(round(self.presence_confidence, 2))+ "%"
       text.id = marker_id * 1000
       text.ns = self.label
       text.lifetime = rclpy.duration.Duration(seconds=lifetime).to_msg()

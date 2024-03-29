@@ -1,0 +1,1 @@
+ros2 launch nav2_bringup slam_launch.py

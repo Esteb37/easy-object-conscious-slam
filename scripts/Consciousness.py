@@ -25,7 +25,6 @@ class Conciousness(LogNode):
     PLOT = True
 
     TRACKING_THRESHOLD = 0.1
-    ISLAND_THRESHOLD = 0.075
 
     def __init__(self):
         super().__init__('Consciousness')
@@ -77,6 +76,8 @@ class Conciousness(LogNode):
 
         self.time = time.time()
 
+        self.is_new_frame = True
+
     def yolo_callback(self, msg):
 
         self.yolo_projections = []
@@ -88,6 +89,7 @@ class Conciousness(LogNode):
 
         for i in range(0, len(msg.data), 6):
             x1, y1, x2, y2, class_index, confidence = msg.data[i:i+6]
+            confidence/=100
             y1 = self.IMAGE_HEIGHT - y1
             y2 = self.IMAGE_HEIGHT -  y2
             x2*=1.05
@@ -112,8 +114,16 @@ class Conciousness(LogNode):
         self.publish_markers()
 
     def pose_callback(self, msg):
-        self.rotation_matrix, self.translation_vector = pose_msg_to_numpy(msg.pose.pose)
+        new_rotation_matrix, new_translation_vector = pose_msg_to_numpy(msg.pose.pose)
 
+        # if the robot has moved or turn, is new frame
+        if np.array_equal(new_rotation_matrix, self.rotation_matrix) and np.array_equal(new_translation_vector, self.translation_vector):
+            self.is_new_frame = False
+        else:
+            self.is_new_frame = True
+
+        self.rotation_matrix = new_rotation_matrix
+        self.translation_vector = new_translation_vector
 
     def lidar_callback(self, msg):
         self.lidar = msg.ranges
@@ -123,7 +133,7 @@ class Conciousness(LogNode):
 
     def find_objects(self):
 
-        if not self.lidar:
+        if not self.lidar or not self.is_new_frame:
             return
 
         if self.PLOT:
@@ -160,7 +170,7 @@ class Conciousness(LogNode):
 
         for projection in self.yolo_projections:
 
-          new_object = projection.find_object(self.ISLAND_THRESHOLD)
+          new_object = projection.find_object()
 
           if new_object:
             if self.PLOT:

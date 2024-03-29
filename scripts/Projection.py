@@ -4,6 +4,10 @@ from Utils import *
 from Object import *
 
 class Projection:
+
+
+  ISLAND_THRESHOLD = 0.075
+
   def __init__(self, array,
                intrinsic_matrix,
                height,
@@ -55,7 +59,7 @@ class Projection:
   def add_lidar_point(self, x, y):
     self.lidar_points.append((x,y))
 
-  def find_object(self, threshold):
+  def find_object(self):
 
     if not self.lidar_points:
       return None
@@ -67,7 +71,7 @@ class Projection:
     multi_point = MultiPoint(shapely_points)
 
     # Buffer the MultiPoint to form circles around each point
-    buffered_multi_point = multi_point.buffer(threshold)
+    buffered_multi_point = multi_point.buffer(self.ISLAND_THRESHOLD)
 
     # Merge overlapping circles to form continuous regions
     merged_multi_point = unary_union(buffered_multi_point)
@@ -91,7 +95,7 @@ class Projection:
         dist_to_line = distance_to_line(self.center_line, (center_x, center_y))
 
         if centermost_island is None or dist_to_line < min_distance:
-            centermost_island = Object(self.label, Point(center_x, center_y), width, height)
+            centermost_island = Object(Point(center_x, center_y), width, height, self)
             min_distance = dist_to_line
 
     return centermost_island
