@@ -193,12 +193,36 @@ class Conciousness(LogNode):
             if not tracked:
               self.objects.append(new_object)
 
+
+        for i, this in enumerate(self.objects):
+            if this is None:
+              continue
+            for j in range(i+1, len(self.objects)):
+                other = self.objects[j]
+                if other is None:
+                  continue
+                if this.collides(other):
+                  if this.label == other.label:
+                    if this.area > other.area:
+                      this.update_data(other, False)
+                      self.objects[j] = None
+                    else:
+                      other.update_data(this, False)
+                      self.objects[i] = None
+                  else:
+                    if this.presence_confidence < other.presence_confidence:
+                        self.objects[i] = None
+                    else:
+                        self.objects[j] = None
+
+        self.objects = [obj for obj in self.objects if obj is not None]
+
     def publish_markers(self):
-        markers = MarkerArray()
 
         lifetime = (time.time() -  self.time)
         self.time = time.time()
 
+        markers = MarkerArray()
         for marker_id, obj in enumerate(self.objects):
             if obj.presence_confidence < self.PRESENCE_TRESHOLD:
                 continue
@@ -215,7 +239,15 @@ class Conciousness(LogNode):
           self.fig.canvas.flush_events()
           plt.pause(0.0001)
 
+        # remove objects with same ns and id
+        for i, marker in enumerate(markers.markers):
+            for j in range(i+1, len(markers.markers)):
+                if marker.ns == markers.markers[j].ns and marker.id == markers.markers[j].id:
+                    markers.markers[j].id += 1
+
         self.obj_pub.publish(markers)
+
+
 
 def main(args=None):
     rclpy.init(args=args)

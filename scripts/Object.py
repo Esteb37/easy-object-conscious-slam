@@ -29,7 +29,7 @@ class Object:
 
   def collides(self, other):
     distance = self.distance(other)
-    return distance < (self.width + other.width) / 2 or distance < (self.height + other.height) / 2
+    return distance < (self.width + other.width) / 2 and distance < (self.height + other.height) / 2
 
   def update_data(self, other, is_new_frame):
       uw = self.UPDATE_WEIGHT
@@ -86,7 +86,7 @@ class Object:
       text.pose.position.z = 0.5
       text.pose.orientation.w = 1.0
       text.text = self.label + "," + str(round(self.presence_confidence, 2))+ "%"
-      text.id = marker_id * 1000
+      text.id = marker_id + 1000
       text.ns = self.label
       text.lifetime = rclpy.duration.Duration(seconds=lifetime).to_msg()
       return text
