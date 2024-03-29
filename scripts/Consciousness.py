@@ -5,7 +5,7 @@ from Object import *
 from Projection import *
 
 import rclpy
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, Float32
 from visualization_msgs.msg import MarkerArray
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -25,6 +25,7 @@ class Conciousness(LogNode):
     PLOT = True
 
     TRACKING_THRESHOLD = 0.1
+    PRESENCE_TRESHOLD = 0.0
 
     def __init__(self):
         super().__init__('Consciousness')
@@ -32,6 +33,7 @@ class Conciousness(LogNode):
         self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.pose_callback, 10)
         self.yolo_subscriber = self.create_subscription(Int32MultiArray, '/yolo_boxes', self.yolo_callback, 10)
         self.lidar_subscriber = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 10)
+        self.presence_subscriber = self.create_subscription(Float32, '/presence_threshold', self.presence_callback, 10)
 
         self.obj_pub = self.create_publisher(MarkerArray, '/objects', 1)
 
@@ -77,6 +79,9 @@ class Conciousness(LogNode):
         self.time = time.time()
 
         self.is_new_frame = True
+
+    def presence_callback(self, msg):
+        self.PRESENCE_TRESHOLD = msg.data
 
     def yolo_callback(self, msg):
 
@@ -133,7 +138,7 @@ class Conciousness(LogNode):
 
     def find_objects(self):
 
-        if not self.lidar or not self.is_new_frame:
+        if not self.lidar:
             return
 
         if self.PLOT:
@@ -182,7 +187,7 @@ class Conciousness(LogNode):
 
             for obj in self.objects:
                 if new_object.label == obj.label and new_object.collides(obj):
-                    obj.update_data(new_object)
+                    obj.update_data(new_object, self.is_new_frame)
                     tracked = True
 
             if not tracked:
@@ -190,15 +195,16 @@ class Conciousness(LogNode):
 
     def publish_markers(self):
         markers = MarkerArray()
-        marker_id = 0
 
         lifetime = (time.time() -  self.time)
         self.time = time.time()
 
-        for obj in self.objects:
+        for marker_id, obj in enumerate(self.objects):
+            if obj.presence_confidence < self.PRESENCE_TRESHOLD:
+                continue
+
             markers.markers.append(obj.as_marker(marker_id, lifetime))
             markers.markers.append(obj.as_marker_label(marker_id, lifetime))
-            marker_id+=1
 
         if self.PLOT:
           self.ax.legend()

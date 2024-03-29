@@ -31,7 +31,7 @@ class Object:
     distance = self.distance(other)
     return distance < (self.width + other.width) / 2 or distance < (self.height + other.height) / 2
 
-  def update_data(self, other):
+  def update_data(self, other, is_new_frame):
       uw = self.UPDATE_WEIGHT
       uwc = 1 - uw
       self.center = Point(
@@ -43,6 +43,9 @@ class Object:
 
       self.width = max(self.width, other.width)
       self.height = max(self.height, other.height)
+
+      if not is_new_frame:
+        return
 
       if self.frame_presence < self.FRAME_CONFIDENCE:
         self.frame_presence += 1
