@@ -18,6 +18,7 @@ class Object:
     self.height = height
     self.color = projection.color
     self.label = projection.label
+    self.projection = projection
     self.presence_confidence = projection.confidence / self.FRAME_CONFIDENCE
     self.detection_confidence = projection.confidence
     self.area = width*height

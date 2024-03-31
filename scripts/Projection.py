@@ -6,7 +6,7 @@ from Object import *
 class Projection:
 
 
-  ISLAND_THRESHOLD = 0.075
+  ISLAND_THRESHOLD = 0.1
 
   def __init__(self, array,
                intrinsic_matrix,

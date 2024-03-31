@@ -161,26 +161,17 @@ class Conciousness(LogNode):
                 y = point * np.sin(angle)
 
                 if angle > self.camera_angle_min and angle < self.camera_angle_max:
-
-                    closest_projection = None
-                    closest_distance = float('inf')
+                    found = False
                     for projection in self.yolo_projections:
                         if projection.contains(x, y):
-                            projection_center = projection.center_line[0]
-                            camera_center = self.camera_projection.center_line[0]
-                            distance = np.linalg.norm(np.array(projection_center) - np.array(camera_center))
+                            if projection is not None:
+                              projection.add_lidar_point(x, y)
+                              found = True
 
-                            if closest_projection is None or distance < closest_distance:
-                                closest_projection = projection
-                                closest_distance = distance
+                            if self.PLOT:
+                              self.ax.plot(x, y, color=projection.color, marker='.')
 
-                    if closest_projection is not None:
-                      closest_projection.add_lidar_point(x, y)
-
-                      if self.PLOT:
-                        self.ax.plot(x, y, color=closest_projection.color, marker='.')
-
-                    elif self.PLOT:
+                    if not found and self.PLOT:
                         self.ax.plot(x, y, 'r.')
 
 
@@ -221,10 +212,21 @@ class Conciousness(LogNode):
                       other.update_data(this, False)
                       self.objects[i] = None
                   else:
-                    if this.presence_confidence < other.presence_confidence:
-                        self.objects[i] = None
-                    else:
-                        self.objects[j] = None
+                      this_projection_center = this.projection.center_line[0]
+                      other_projection_center = other.projection.center_line[0]
+                      camera_center = self.camera_projection.center_line[0]
+                      this_distance = np.linalg.norm(np.array(this_projection_center) - np.array(camera_center))
+                      other_distance = np.linalg.norm(np.array(other_projection_center) - np.array(camera_center))
+                      if this_distance < other_distance:
+                          self.objects[j] = None
+                      elif this_distance > other_distance:
+                          self.objects[i] = None
+                      else:
+                          if this.confidence > other.confidence:
+                            self.objects[j] = None
+                          else:
+                            self.objects[i] = None
+
 
         self.objects = [obj for obj in self.objects if obj is not None]
 
