@@ -1,0 +1,15 @@
+Install Webots
+Install ROS2 and ROS2 Desktop
+Follow the installation requirements defined here https://docs.ros.org/en/galactic/Tutorials/Advanced/Simulators/Webots.html
+Install webots C++ Library
+Install ROS2 C++ Library
+Install ROS2 Python Library
+Install slam_toolbox and Nav2 packages
+Install Teleop Twist package if not included in ROS2
+Install numpy, matplotlib, OpenCV2, Ultralytics, Shapely and cv_bridge
+Modify ./compile and ./run commands to match your system
+Install colcon
+If first time, run ./compile
+Next runs, run ./run
+In another window, run ./slam
+In another window, run ./teleop

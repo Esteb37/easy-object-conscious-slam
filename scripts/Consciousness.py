@@ -22,7 +22,7 @@ class Conciousness(LogNode):
     IMAGE_WIDTH = 640 * 1.05
     IMAGE_HEIGHT = 481 * 1.05
 
-    PLOT = True
+    PLOT = False
 
     TRACKING_THRESHOLD = 0.3
     PRESENCE_TRESHOLD = 0.8
@@ -164,9 +164,8 @@ class Conciousness(LogNode):
                     found = False
                     for projection in self.yolo_projections:
                         if projection.contains(x, y):
-                            if projection is not None:
-                              projection.add_lidar_point(x, y)
-                              found = True
+                            projection.add_lidar_point(x, y)
+                            found = True
 
                             if self.PLOT:
                               self.ax.plot(x, y, color=projection.color, marker='.')
@@ -188,9 +187,10 @@ class Conciousness(LogNode):
             tracked = False
 
             for obj in self.objects:
-                if new_object.label == obj.label and new_object.collides(obj):
+                if new_object.label == obj.label and new_object.distance(obj) < self.TRACKING_THRESHOLD:
                     obj.update_data(new_object, self.is_new_frame)
                     tracked = True
+                    break
 
             if not tracked:
               self.objects.append(new_object)
