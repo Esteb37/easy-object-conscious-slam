@@ -152,10 +152,10 @@ class Conciousness(LogNode):
           for projection in self.yolo_projections:
             projection.plot(self.ax, "-")
 
-        for point in self.lidar:
+        for index, point in enumerate(self.lidar):
             if point != float('inf'):
                 # get the angle of the point
-                angle = self.angle_min + self.angle_increment * self.lidar.index(point)
+                angle = self.angle_min + self.angle_increment * index
                 # get the x and y coordinates of the point
                 x = point * np.cos(angle)
                 y = point * np.sin(angle)
